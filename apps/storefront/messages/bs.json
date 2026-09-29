@@ -1,0 +1,329 @@
+{
+  "common": {
+    "siteDescription": "LNA kreativna sehara ručno izrađuje dekoracije, poklone i uspomene od drveta i epoksidne smole za dom, posebne prilike i one koje volite.",
+    "home": "Početna",
+    "shop": "Shop",
+    "cart": "Korpa",
+    "materials": {
+      "wood": "Drvo",
+      "resin": "Epoksidna smola",
+      "mixed": "Kombinovano"
+    },
+    "productTypes": {
+      "standard": "Standardni",
+      "custom": "Personalizirani"
+    },
+    "from": "Od {price}",
+    "decreaseQuantity": "Smanji količinu",
+    "increaseQuantity": "Povećaj količinu",
+    "remove": "Ukloni {name}"
+  },
+  "meta": {
+    "home": "LNA kreativna sehara | Ručno izrađeni pokloni i dekoracije",
+    "shop": "Webshop | LNA kreativna sehara",
+    "about": "O nama | LNA kreativna sehara",
+    "custom": "Custom izrada | LNA kreativna sehara",
+    "cart": "Korpa | LNA kreativna sehara",
+    "checkout": "Checkout | LNA kreativna sehara",
+    "success": "Narudžba zaprimljena | LNA kreativna sehara"
+  },
+  "notFound": {
+    "title": "Stranica nije pronađena",
+    "description": "Ova stranica ne postoji. Vratite se na početnu ili otvorite shop."
+  },
+  "error": {
+    "title": "Webshop je privremeno nedostupan",
+    "description": "Molimo pokušajte ponovo za trenutak.",
+    "retry": "Pokušaj ponovo"
+  },
+  "header": {
+    "freeDelivery": "Besplatna dostava za narudžbe od {amount} KM",
+    "openMenu": "Otvori meni",
+    "closeMenu": "Zatvori meni",
+    "menu": "Meni",
+    "mainNavigation": "Glavna navigacija",
+    "nav": {
+      "allProducts": "Svi proizvodi",
+      "customizable": "Personalizirani proizvodi",
+      "customWork": "Custom izrada",
+      "about": "O nama"
+    },
+    "tagline": "Ručno izrađeni pokloni, dekoracije i uspomene iz Sarajeva.",
+    "searchLabel": "Pretraži proizvode",
+    "searchButton": "Pretraži",
+    "switchLanguage": "EN"
+  },
+  "footer": {
+    "description": "Webshop za ručno izrađene proizvode od drveta i epoksidne smole. Gotove artikle možete naručiti odmah, a za komade po vašoj želji pošaljite kratki upit sa idejom i željenim dimenzijama.",
+    "navigation": "Navigacija",
+    "customWork": "Custom izrada",
+    "about": "O nama",
+    "contact": "Kontakt",
+    "location": "Sarajevo, BiH",
+    "languageNote": "Bosanski je primarni jezik webshopa.",
+    "backHome": "Nazad na početnu"
+  },
+  "home": {
+    "hero": {
+      "imageAlt": "LNA kreativna sehara ručno izrađene dekoracije u enterijeru",
+      "eyebrow": "Dizajnirano i izrađeno u Sarajevu",
+      "title": "Vaša ideja, ručno izrađena.",
+      "description": "Dekoracije, pokloni i uspomene izrađeni s pažnjom — od prve ideje do gotovog komada.",
+      "shopCta": "Pogledaj proizvode",
+      "customCta": "Pošalji svoju ideju"
+    },
+    "categories": {
+      "title": "Šta želite da napravimo?",
+      "tiles": {
+        "nameSigns": "Natpisi s imenima",
+        "wallDecor": "Zidne dekoracije",
+        "celebrationDecor": "Dekoracije za proslave",
+        "gifts": "Pokloni i uspomene",
+        "businessSigns": "Poslovni natpisi",
+        "keychains": "Privjesci",
+        "houseNumbers": "Kućni brojevi",
+        "monograms": "Monogrami",
+        "forHome": "Za dom",
+        "yourIdea": "Po vašoj ideji"
+      }
+    },
+    "customStudio": {
+      "imageAlt": "Personalizirani poslovni natpis",
+      "title": "Ne nalazite ono što ste zamislili?",
+      "description": "Pošaljite nam skicu, fotografiju ili samo ideju. Zajedno ćemo odabrati materijal, boje i detalje za komad koji je samo vaš.",
+      "cta": "Započni custom projekat"
+    },
+    "products": {
+      "title": "Svi proizvodi",
+      "viewAll": "Pogledaj sve"
+    },
+    "showcase": {
+      "eyebrow": "Ideje iz radionice",
+      "title": "Napravljeno da bude dio vaših trenutaka.",
+      "tiles": {
+        "space": "Detalji koji mijenjaju prostor",
+        "name": "Ime napravljeno samo za vas",
+        "memories": "Uspomene koje ostaju blizu",
+        "celebrations": "Trenuci vrijedni slavlja"
+      }
+    },
+    "craft": {
+      "imageAlt": "Ručna izrada LNA kreativna sehara proizvoda",
+      "eyebrow": "Materijal i ručni rad",
+      "title": "Svaki komad nastaje polako, rukom i s pažnjom.",
+      "description": "Drvo donosi toplinu i prirodan osjećaj, a epoksidna smola sjaj i dubinu boja. Svaki komad možemo prilagoditi bojom, veličinom i detaljima.",
+      "cta": "Istraži custom izradu"
+    }
+  },
+  "shop": {
+    "allProducts": "Svi proizvodi",
+    "productCount": "({count} proizvoda)",
+    "featured": "Istaknuto",
+    "viewProduct": "Pogledaj proizvod",
+    "filters": {
+      "title": "Filteri",
+      "material": "Materijal",
+      "allMaterials": "Svi materijali",
+      "category": "Kategorija",
+      "allCategories": "Sve kategorije",
+      "productType": "Tip proizvoda",
+      "allTypes": "Svi tipovi",
+      "clearFilters": "Očisti filtere",
+      "close": "Zatvori filtere",
+      "clear": "Očisti",
+      "show": "Prikaži ({count})"
+    },
+    "sort": {
+      "label": "Sortiraj",
+      "featured": "Istaknuto",
+      "nameAsc": "Naziv A–Ž",
+      "priceAsc": "Cijena: niža prvo",
+      "priceDesc": "Cijena: viša prvo"
+    },
+    "view": {
+      "label": "Prikaz",
+      "list": "Prikaži kao listu",
+      "grid": "Prikaži kao mrežu"
+    },
+    "allCategoriesChip": "Sve",
+    "resultsFor": "Rezultati za “{query}” · {count}",
+    "showing": "Prikazano {shown} od {total}",
+    "empty": "Nema proizvoda za odabrane filtere."
+  },
+  "product": {
+    "personalizationAvailable": "Personalizacija dostupna",
+    "readyToOrder": "Spremno za narudžbu",
+    "addedToCart": "Proizvod je dodan u korpu.",
+    "chooseDimensions": "Odaberite dimenzije",
+    "dimensions": "Dimenzije",
+    "leadTime": "Rok izrade",
+    "personalization": "Personalizacija",
+    "personalizationPlaceholder": "Unesite ime, tekst, dimenziju ili kratku napomenu.",
+    "addToCart": "Dodaj u korpu",
+    "details": {
+      "deliveryTitle": "Dostava i rok izrade",
+      "deliveryText": "Procijenjeni rok izrade je {leadTime}. Narudžbu potvrđujemo nakon pregleda svih detalja.",
+      "careTitle": "Materijal i održavanje",
+      "careText": "Čistite mekom, blago navlaženom krpom bez abrazivnih sredstava.",
+      "bulkTitle": "Veće količine i poslovne narudžbe",
+      "bulkText": "Za veće serije pripremamo posebnu ponudu i dogovaramo proizvodni rok."
+    },
+    "showImage": "Prikaži sliku {number}",
+    "breadcrumb": "Putanja",
+    "collectionFallback": "LNA kreativna sehara kolekcija",
+    "highlights": {
+      "eyebrow": "Kvalitet u detaljima",
+      "title": "Napravljeno da traje.",
+      "materialTitle": "Odabran materijal",
+      "finishTitle": "Ručna završna obrada",
+      "finishText": "Svaki komad ručno dorađujemo i pregledamo prije pakovanja.",
+      "packagingTitle": "Sigurno pakovanje",
+      "packagingText": "Pripremljeno za siguran transport do vas.",
+      "handmadeTitle": "Ručno izrađeno",
+      "handmadeText": "Svaki komad je jedinstven, izrađen rukom u našoj radionici.",
+      "materialText": {
+        "wood": "Pažljivo odabrano i ručno obrađeno drvo.",
+        "resin": "Epoksidna smola lijevana ručno, sa dubokim sjajem.",
+        "mixed": "Kombinacija materijala odabrana za poseban izgled."
+      }
+    },
+    "finish": {
+      "eyebrow": "Materijal i završna obrada",
+      "titleFallback": "Ručni rad koji vidite i osjetite.",
+      "text": "Komad izrađujemo od materijala: {material}. Svaki detalj oblikujemo i završavamo ručno, pa je svaki komad pomalo jedinstven."
+    },
+    "specs": {
+      "eyebrow": "Detalji",
+      "title": "Specifikacije",
+      "material": "Materijal",
+      "availability": "Dostupnost",
+      "personalizationAvailable": "Dostupna",
+      "personalizationUnavailable": "Nije dostupna"
+    },
+    "related": "Povezani proizvodi"
+  },
+  "cart": {
+    "drawerTitle": "Korpa",
+    "viewCart": "Pogledaj korpu",
+    "closeCart": "Zatvori korpu",
+    "emptyTitle": "Korpa je prazna",
+    "drawerEmptyDescription": "Dodajte standardne proizvode ili personalizirane artikle iz webshopa.",
+    "dimensions": "Dimenzije: {dimensions}",
+    "drawerSubtotal": "Ukupno",
+    "proceedToCheckout": "Nastavi na checkout",
+    "itemCount": "{count} artikala",
+    "pageTitle": "Vaša korpa",
+    "continueShopping": "Nastavi kupovinu",
+    "pageEmptyDescription": "Pronađite proizvod koji vam se sviđa i dodajte ga u korpu.",
+    "startShopping": "Počni kupovinu",
+    "columns": {
+      "product": "Proizvod",
+      "quantity": "Količina",
+      "total": "Ukupno"
+    },
+    "removeButton": "Ukloni",
+    "summaryTitle": "Sažetak narudžbe",
+    "subtotal": "Međuzbir",
+    "shippingNote": "Dostava i konačni detalji narudžbe potvrđuju se na checkoutu.",
+    "repricer": {
+      "removed": "Neki proizvodi više nisu dostupni i uklonjeni su iz korpe.",
+      "repriced": "Cijene u korpi su ažurirane prema aktuelnom katalogu."
+    }
+  },
+  "checkout": {
+    "intro": {
+      "eyebrow": "Checkout",
+      "title": "Pošaljite narudžbu, a detalje potvrđujemo ručno.",
+      "description": "Ovo je prva verzija webshop checkouta. Nakon slanja narudžbe dobijate potvrdu, detalje dostave i upute za manualno plaćanje."
+    },
+    "submitError": "Narudžba nije poslana. Pokušajte ponovo.",
+    "emptyDescription": "Dodajte proizvode prije nego što nastavite na checkout.",
+    "backToShop": "Nazad na shop",
+    "sections": {
+      "contact": "Kontakt",
+      "shipping": "Dostava",
+      "notes": "Napomena"
+    },
+    "fields": {
+      "fullName": "Ime i prezime",
+      "phone": "Telefon",
+      "address": "Adresa",
+      "city": "Grad",
+      "postalCode": "Poštanski broj",
+      "country": "Država",
+      "countryDefault": "Bosna i Hercegovina",
+      "notes": "Dodatne informacije",
+      "notesPlaceholder": "Napomena za dostavu, personalizaciju ili potvrdu narudžbe."
+    },
+    "confirmationNote": "Nakon slanja narudžbe kontaktirat ćemo vas radi potvrde dostupnosti, ukupnog iznosa dostave i detalja manualnog plaćanja.",
+    "submitting": "Slanje...",
+    "submit": "Pošalji narudžbu · {total}",
+    "summary": {
+      "title": "Sažetak",
+      "quantity": "Količina {quantity}",
+      "products": "Proizvodi",
+      "free": "Gratis",
+      "total": "Ukupno"
+    }
+  },
+  "success": {
+    "eyebrow": "Narudžba primljena",
+    "title": "Hvala. Pregledamo vašu narudžbu.",
+    "description": "Poslat ćemo potvrdu dostupnosti. Sačuvajte broj narudžbe za komunikaciju.",
+    "backToShop": "Nazad u shop"
+  },
+  "custom": {
+    "eyebrow": "Custom izrada",
+    "title": "Pošaljite ideju, dimenzije i rok, a mi vraćamo prijedlog izrade.",
+    "description": "Ovaj obrazac je namijenjen za komade koji nisu standardni artikli u webshopu: personalizirane poklone, serije poklona za goste, dekoracije za proslave i komade po mjeri.",
+    "helpTitle": "Šta nam pomaže da brzo odgovorimo",
+    "bullets": {
+      "signage": "Personalizirani natpisi i table s imenima",
+      "gifts": "Pokloni i dekoracije za vjenčanja, rođendane i proslave",
+      "batch": "Manje serije poklona za goste, firme i evente"
+    },
+    "helpNote": "Ako imate fotografiju, skicu ili inspiraciju, spomenite je u opisu i napišite za koju priliku je komad.",
+    "form": {
+      "fullName": "Ime i prezime",
+      "email": "Email",
+      "phone": "Telefon",
+      "deadline": "Željeni rok",
+      "dimensions": "Dimenzije / količina",
+      "brief": "Opis projekta",
+      "briefPlaceholder": "Opišite proizvod, materijal, boju, količinu i svrhu.",
+      "submit": "Pošalji upit",
+      "sending": "Slanje...",
+      "success": "Upit je poslan. Javljamo se uskoro.",
+      "error": "Upit nije poslan. Provjerite podatke i pokušajte ponovo."
+    }
+  },
+  "about": {
+    "eyebrow": "O nama",
+    "title": "Mala radionica u kojoj svaki komad nastaje ručno.",
+    "description": "LNA kreativna sehara spaja kreativnost i ručni rad u pokloni i dekoracije koje nose priču i ostaju za uspomenu.",
+    "values": {
+      "precision": {
+        "title": "Pažnja",
+        "text": "Svaki komad izrađujemo ručno i pregledamo ga prije slanja, detalj po detalj."
+      },
+      "flexibility": {
+        "title": "Prilagodljivost",
+        "text": "Radimo i pojedinačne komade po vašoj želji i manje serije poklona za proslave i firme."
+      },
+      "speed": {
+        "title": "Pouzdanost",
+        "text": "Rokove postavljamo realno i komuniciramo ih rano, posebno za poslovne i sezonske narudžbe."
+      }
+    }
+  },
+  "process": {
+    "eyebrow": "Proces",
+    "title": "Od ideje do gotovog komada, korak po korak.",
+    "description": "Prvo dogovaramo ideju, dimenzije i boje, zatim ručno izrađujemo komad, dorađujemo detalje i provjeravamo ga prije pakovanja.",
+    "steps": {
+      "define": "Dogovaramo ideju, namjenu, dimenzije i boje.",
+      "prepare": "Biramo materijale i pripremamo skicu komada.",
+      "finish": "Ručno izrađujemo, dorađujemo detalje i provjeravamo svaki komad prije slanja."
+    }
+  }
+}

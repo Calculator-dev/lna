@@ -1,0 +1,329 @@
+{
+  "common": {
+    "siteDescription": "LNA kreativna sehara handcrafts decor, gifts, and keepsakes in wood and epoxy resin for homes, special occasions, and the people you love.",
+    "home": "Home",
+    "shop": "Shop",
+    "cart": "Cart",
+    "materials": {
+      "wood": "Wood",
+      "resin": "Epoxy resin",
+      "mixed": "Mixed materials"
+    },
+    "productTypes": {
+      "standard": "Standard",
+      "custom": "Customizable"
+    },
+    "from": "From {price}",
+    "decreaseQuantity": "Decrease quantity",
+    "increaseQuantity": "Increase quantity",
+    "remove": "Remove {name}"
+  },
+  "meta": {
+    "home": "LNA kreativna sehara | Handmade gifts and decor",
+    "shop": "Shop | LNA kreativna sehara",
+    "about": "About | LNA kreativna sehara",
+    "custom": "Custom work | LNA kreativna sehara",
+    "cart": "Your cart | LNA kreativna sehara",
+    "checkout": "Checkout | LNA kreativna sehara",
+    "success": "Order received | LNA kreativna sehara"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This page doesn't exist. Go back to the home page or browse the shop."
+  },
+  "error": {
+    "title": "The shop is temporarily unavailable",
+    "description": "Please try again in a moment.",
+    "retry": "Try again"
+  },
+  "header": {
+    "freeDelivery": "Free delivery on orders from {amount} BAM",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "menu": "Menu",
+    "mainNavigation": "Main navigation",
+    "nav": {
+      "allProducts": "All products",
+      "customizable": "Customizable products",
+      "customWork": "Custom work",
+      "about": "About"
+    },
+    "tagline": "Handmade gifts, decor, and keepsakes from Sarajevo.",
+    "searchLabel": "Search products",
+    "searchButton": "Search",
+    "switchLanguage": "BS"
+  },
+  "footer": {
+    "description": "A webshop for handmade wood and epoxy resin pieces. Ready-made products can be ordered directly, while pieces made to your wishes can be requested with a short brief and dimensions.",
+    "navigation": "Navigation",
+    "customWork": "Custom work",
+    "about": "About",
+    "contact": "Contact",
+    "location": "Sarajevo, Bosnia and Herzegovina",
+    "languageNote": "English is available as a secondary storefront language.",
+    "backHome": "Back to home"
+  },
+  "home": {
+    "hero": {
+      "imageAlt": "LNA kreativna sehara handmade decor in an interior",
+      "eyebrow": "Designed and made in Sarajevo",
+      "title": "Your idea, made by hand.",
+      "description": "Decor, gifts, and keepsakes made with care — from the first idea to the finished piece.",
+      "shopCta": "Shop products",
+      "customCta": "Send your idea"
+    },
+    "categories": {
+      "title": "What would you like us to make?",
+      "tiles": {
+        "nameSigns": "Name signs",
+        "wallDecor": "Wall decor",
+        "celebrationDecor": "Celebration decor",
+        "gifts": "Gifts and keepsakes",
+        "businessSigns": "Business signage",
+        "keychains": "Keychains",
+        "houseNumbers": "House numbers",
+        "monograms": "Monograms",
+        "forHome": "For the home",
+        "yourIdea": "Made from your idea"
+      }
+    },
+    "customStudio": {
+      "imageAlt": "Custom business signage",
+      "title": "Can’t find what you have in mind?",
+      "description": "Send us a sketch, a photo, or simply an idea. We’ll choose the materials, colors, and details together for a piece that is yours alone.",
+      "cta": "Start a custom project"
+    },
+    "products": {
+      "title": "All products",
+      "viewAll": "View all"
+    },
+    "showcase": {
+      "eyebrow": "From the workshop",
+      "title": "Made to become part of your moments.",
+      "tiles": {
+        "space": "Details that change a room",
+        "name": "A name made just for you",
+        "memories": "Memories kept close",
+        "celebrations": "Moments worth celebrating"
+      }
+    },
+    "craft": {
+      "imageAlt": "Handcrafting a LNA kreativna sehara piece",
+      "eyebrow": "Material and handcraft",
+      "title": "Every piece is made slowly, by hand, and with care.",
+      "description": "Wood brings warmth and a natural feel, while epoxy resin adds shine and depth of color. Each piece can be adjusted in color, size, and details.",
+      "cta": "Explore custom work"
+    }
+  },
+  "shop": {
+    "allProducts": "All products",
+    "productCount": "({count} products)",
+    "featured": "Featured",
+    "viewProduct": "View product",
+    "filters": {
+      "title": "Filters",
+      "material": "Material",
+      "allMaterials": "All materials",
+      "category": "Category",
+      "allCategories": "All categories",
+      "productType": "Product type",
+      "allTypes": "All types",
+      "clearFilters": "Clear filters",
+      "close": "Close filters",
+      "clear": "Clear",
+      "show": "Show ({count})"
+    },
+    "sort": {
+      "label": "Sort by",
+      "featured": "Featured",
+      "nameAsc": "Name A–Z",
+      "priceAsc": "Price: low to high",
+      "priceDesc": "Price: high to low"
+    },
+    "view": {
+      "label": "View as",
+      "list": "List view",
+      "grid": "Grid view"
+    },
+    "allCategoriesChip": "All",
+    "resultsFor": "Results for “{query}” · {count}",
+    "showing": "Showing {shown} of {total}",
+    "empty": "No products match these filters."
+  },
+  "product": {
+    "personalizationAvailable": "Personalization available",
+    "readyToOrder": "Ready to order",
+    "addedToCart": "Product added to cart.",
+    "chooseDimensions": "Choose dimensions",
+    "dimensions": "Dimensions",
+    "leadTime": "Lead time",
+    "personalization": "Personalization",
+    "personalizationPlaceholder": "Enter a name, wording, dimension, or short note.",
+    "addToCart": "Add to cart",
+    "details": {
+      "deliveryTitle": "Delivery and lead time",
+      "deliveryText": "The estimated lead time is {leadTime}. We confirm the order after reviewing all details.",
+      "careTitle": "Material and care",
+      "careText": "Clean with a soft, lightly damp cloth without abrasive products.",
+      "bulkTitle": "Bulk and business orders",
+      "bulkText": "For larger batches, we prepare a tailored quote and production schedule."
+    },
+    "showImage": "Show image {number}",
+    "breadcrumb": "Breadcrumb",
+    "collectionFallback": "LNA kreativna sehara collection",
+    "highlights": {
+      "eyebrow": "Quality in every detail",
+      "title": "Made to last.",
+      "materialTitle": "Selected material",
+      "finishTitle": "Finished by hand",
+      "finishText": "Every piece is finished by hand and checked before packing.",
+      "packagingTitle": "Secure packaging",
+      "packagingText": "Prepared for safe delivery to your door.",
+      "handmadeTitle": "Handmade",
+      "handmadeText": "Every piece is unique, made by hand in our workshop.",
+      "materialText": {
+        "wood": "Carefully selected, hand-finished wood.",
+        "resin": "Hand-poured epoxy resin with a deep shine.",
+        "mixed": "A combination of materials chosen for a special look."
+      }
+    },
+    "finish": {
+      "eyebrow": "Material and finish",
+      "titleFallback": "Handcraft you can see and feel.",
+      "text": "This piece is made from {material}. Every detail is shaped and finished by hand, so each piece is a little unique."
+    },
+    "specs": {
+      "eyebrow": "Details",
+      "title": "Specifications",
+      "material": "Material",
+      "availability": "Availability",
+      "personalizationAvailable": "Available",
+      "personalizationUnavailable": "Not available"
+    },
+    "related": "Related products"
+  },
+  "cart": {
+    "drawerTitle": "Your cart",
+    "viewCart": "View cart",
+    "closeCart": "Close cart",
+    "emptyTitle": "Your cart is empty",
+    "drawerEmptyDescription": "Add standard products or personalized pieces from the webshop.",
+    "dimensions": "Dimensions: {dimensions}",
+    "drawerSubtotal": "Subtotal",
+    "proceedToCheckout": "Proceed to checkout",
+    "itemCount": "{count} items",
+    "pageTitle": "Your cart",
+    "continueShopping": "Continue shopping",
+    "pageEmptyDescription": "Find something you love and add it to your cart.",
+    "startShopping": "Start shopping",
+    "columns": {
+      "product": "Product",
+      "quantity": "Quantity",
+      "total": "Total"
+    },
+    "removeButton": "Remove",
+    "summaryTitle": "Order summary",
+    "subtotal": "Subtotal",
+    "shippingNote": "Shipping and final order details are confirmed at checkout.",
+    "repricer": {
+      "removed": "Some products are no longer available and were removed from your cart.",
+      "repriced": "Cart prices were updated to match the current catalogue."
+    }
+  },
+  "checkout": {
+    "intro": {
+      "eyebrow": "Checkout",
+      "title": "Submit the order and we will confirm the details manually.",
+      "description": "This is the first webshop checkout release. After submitting, you receive confirmation, shipping details, and manual payment instructions."
+    },
+    "submitError": "Order submission failed. Please try again.",
+    "emptyDescription": "Add products before continuing to checkout.",
+    "backToShop": "Back to shop",
+    "sections": {
+      "contact": "Contact",
+      "shipping": "Shipping",
+      "notes": "Notes"
+    },
+    "fields": {
+      "fullName": "Full name",
+      "phone": "Phone",
+      "address": "Address",
+      "city": "City",
+      "postalCode": "Postal code",
+      "country": "Country",
+      "countryDefault": "Bosnia and Herzegovina",
+      "notes": "Additional information",
+      "notesPlaceholder": "Any extra note for delivery, personalization, or order confirmation."
+    },
+    "confirmationNote": "After the order is submitted, we will contact you to confirm availability, final delivery cost, and manual payment details.",
+    "submitting": "Submitting...",
+    "submit": "Submit order · {total}",
+    "summary": {
+      "title": "Summary",
+      "quantity": "Qty {quantity}",
+      "products": "Products",
+      "free": "Free",
+      "total": "Total"
+    }
+  },
+  "success": {
+    "eyebrow": "Order received",
+    "title": "Thank you. We are reviewing your order.",
+    "description": "We will send you confirmation of availability. Keep the order number for follow-up.",
+    "backToShop": "Back to shop"
+  },
+  "custom": {
+    "eyebrow": "Custom work",
+    "title": "Send the idea, dimensions, and timing, and we will return a proposal.",
+    "description": "This form is intended for pieces that are not standard webshop items: personalized gifts, guest gift batches, celebration decor, and made-to-measure pieces.",
+    "helpTitle": "What helps us reply quickly",
+    "bullets": {
+      "signage": "Personalized signs and name plaques",
+      "gifts": "Gifts and decor for weddings, birthdays, and celebrations",
+      "batch": "Small batches of gifts for guests, companies, and events"
+    },
+    "helpNote": "If you have a photo, sketch, or inspiration, mention it in the brief and tell us what occasion the piece is for.",
+    "form": {
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "deadline": "Preferred deadline",
+      "dimensions": "Dimensions / quantity",
+      "brief": "Project brief",
+      "briefPlaceholder": "Describe the product, material, color, quantity, and intended use.",
+      "submit": "Send brief",
+      "sending": "Sending...",
+      "success": "Your brief has been sent. We will reply soon.",
+      "error": "The brief could not be sent. Check the details and try again."
+    }
+  },
+  "about": {
+    "eyebrow": "About",
+    "title": "A small workshop where every piece is made by hand.",
+    "description": "LNA kreativna sehara brings creativity and handcraft together in gifts and decor that tell a story and become keepsakes.",
+    "values": {
+      "precision": {
+        "title": "Care",
+        "text": "Every piece is made by hand and checked detail by detail before dispatch."
+      },
+      "flexibility": {
+        "title": "Flexibility",
+        "text": "We make one-off pieces to your wishes as well as small gift batches for celebrations and companies."
+      },
+      "speed": {
+        "title": "Reliability",
+        "text": "Lead times are set realistically and communicated early, especially for business and seasonal work."
+      }
+    }
+  },
+  "process": {
+    "eyebrow": "Process",
+    "title": "From idea to finished piece, step by step.",
+    "description": "We first agree on the idea, dimensions, and colors, then make the piece by hand, finish the details, and check it before packing.",
+    "steps": {
+      "define": "We agree on the idea, purpose, dimensions, and colors.",
+      "prepare": "We choose the materials and sketch the piece.",
+      "finish": "We make it by hand, finish the details, and check each piece before dispatch."
+    }
+  }
+}
