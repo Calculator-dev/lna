@@ -72,7 +72,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
       <section className="mx-auto max-w-375 px-4 pb-16 md:px-6 md:pb-24">
         <Reveal>
           <div className="relative min-h-140 overflow-hidden bg-stone-900 md:min-h-162.5">
-            <Image src="/images/product-business-sign.jpg" alt={t("customStudio.imageAlt")} fill sizes="100vw" className="object-cover" />
+            <Image src="/images/product-business-sign.jpg" alt={t("customStudio.imageAlt")} fill sizes="(min-width: 1500px) 1452px, 100vw" className="object-cover" />
             <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/20 to-transparent" />
             <div className="relative flex min-h-140 max-w-xl flex-col justify-center p-7 text-white md:min-h-162.5 md:p-16">
               <p className="text-xs uppercase tracking-[0.28em] text-white/70">Custom studio</p>

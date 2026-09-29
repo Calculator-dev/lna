@@ -47,7 +47,7 @@ export default async function RootLayout({
 }: Readonly<LocaleParams & { children: React.ReactNode }>) {
   const locale = await resolveLocale(params)
   return (
-    <html lang={locale} className={`${inter.variable} ${fraunces.variable}`}>
+    <html lang={locale} data-scroll-behavior="smooth" className={`${inter.variable} ${fraunces.variable}`}>
       <body suppressHydrationWarning className="min-h-screen bg-background font-sans antialiased">
         <NextIntlClientProvider>
           <CartProvider>
