@@ -158,6 +158,19 @@ export function ProductForm({
                 />
               </Field>
               <Field
+                label="Materijal i održavanje"
+                hint="Prikazuje se u dijelu „Materijal i održavanje” na stranici proizvoda. Ako ostane prazno, prikazuje se opšta uputa o čišćenju."
+              >
+                <textarea
+                  name="care.bs"
+                  defaultValue={product?.translations.bs?.care ?? ""}
+                  className={control}
+                  rows={3}
+                  maxLength={2000}
+                  placeholder="npr. Hrastovo drvo zaštićeno prirodnim uljem. Čistiti suhom krpom."
+                />
+              </Field>
+              <Field
                 label="Glavne dimenzije *"
                 hint="Prikazuju se kao osnovne dimenzije proizvoda i koriste se za prvu varijantu."
               >
@@ -238,6 +251,15 @@ export function ProductForm({
                       className={control}
                       rows={4}
                       maxLength={10000}
+                    />
+                  </Field>
+                  <Field label="Materijal i održavanje na engleskom">
+                    <textarea
+                      name="care.en"
+                      defaultValue={product?.translations.en?.care ?? ""}
+                      className={control}
+                      rows={3}
+                      maxLength={2000}
                     />
                   </Field>
                   <Field label="Rok izrade na engleskom">

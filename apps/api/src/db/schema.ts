@@ -76,6 +76,8 @@ export const products = pgTable("products", {
           tagline: string;
           shortDescription: string;
           description: string;
+          // Added after launch, so older products may not have it.
+          care?: string;
         }
       >
     >()

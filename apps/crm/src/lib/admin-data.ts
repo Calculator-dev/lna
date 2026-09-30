@@ -100,6 +100,7 @@ export type ProductDetails = AdminProduct & {
       tagline: string;
       shortDescription: string;
       description: string;
+      care?: string;
       slug: string;
     }
   >;

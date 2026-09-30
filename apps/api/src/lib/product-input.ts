@@ -6,6 +6,8 @@ const translation = z.object({
   tagline: z.string().trim().max(300).default(""),
   shortDescription: z.string().trim().max(1000).default(""),
   description: z.string().trim().min(1).max(10000),
+  // Optional "Material and care" text; the storefront shows a generic note when empty.
+  care: z.string().trim().max(2000).default(""),
 });
 const localized = z.object({ bs: short, en: short });
 const variantInput = z.object({

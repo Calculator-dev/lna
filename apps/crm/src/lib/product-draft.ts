@@ -52,7 +52,7 @@ export function productPayload({ form, category, images, variants, mainDimension
   const text = (name: string) => String(form.get(name) ?? "").trim()
   const localized = (name: string) => ({ bs: text(`${name}.bs`), en: text(`${name}.en`) || text(`${name}.bs`) })
   const translation = (locale: "bs" | "en") => Object.fromEntries(
-    ["name", "tagline", "shortDescription", "description"].map(key => [
+    ["name", "tagline", "shortDescription", "description", "care"].map(key => [
       key,
       text(`${key}.${locale}`) || (locale === "en" ? text(`${key}.bs`) : ""),
     ]),

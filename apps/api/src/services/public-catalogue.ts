@@ -29,7 +29,7 @@ export function catalogueResponse(
       type: row.type, material: row.material, featured: row.featured, customizable: row.customizable,
       price: row.price, currency: "BAM" as const, dimensions: row.dimensions,
       leadTime: row.leadTime, stockLabel: row.stockLabel,
-      ...Object.fromEntries(["name", "slug", "tagline", "shortDescription", "description"].map(field => [field, localized(row.translations, field)])),
+      ...Object.fromEntries(["name", "slug", "tagline", "shortDescription", "description", "care"].map(field => [field, localized(row.translations, field)])),
       seo: { title: localized(row.seo, "title"), description: localized(row.seo, "description") },
       media: images.filter(image => image.productId === row.id).sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary)).map(image => ({
         id: image.id, url: `/public/media/${image.id}`, width: image.width, height: image.height,

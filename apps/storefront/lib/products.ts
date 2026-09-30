@@ -59,6 +59,8 @@ export type Product = {
   slug: LocalizedField
   name: LocalizedField
   tagline: LocalizedField
+  /** Product-specific "Material and care" text; optional, empty for older products. */
+  care?: LocalizedField
   shortDescription: LocalizedField
   description: LocalizedField
   variants?: ProductVariant[]
@@ -76,6 +78,7 @@ export type LocalizedProduct = Product & {
   localizedSlug: string
   localizedName: string
   localizedTagline: string
+  localizedCare: string
   localizedShortDescription: string
   localizedDescription: string
   localizedLeadTime: string
@@ -162,6 +165,7 @@ export function localizeProduct(product: Product, locale: Locale): LocalizedProd
     localizedSlug: getLocalizedField(product.slug, locale),
     localizedName: getLocalizedField(product.name, locale),
     localizedTagline: getLocalizedField(product.tagline, locale),
+    localizedCare: product.care ? getLocalizedField(product.care, locale) : "",
     localizedShortDescription: getLocalizedField(product.shortDescription, locale),
     localizedDescription: getLocalizedField(product.description, locale),
     localizedLeadTime: getLocalizedField(product.leadTime, locale),
