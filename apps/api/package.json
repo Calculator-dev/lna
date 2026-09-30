@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "node --env-file=.env --import tsx src/server.ts",
     "build": "tsc -p tsconfig.build.json",
-    "start": "node --env-file=.env dist/server.js",
+    "start": "node --env-file-if-exists=.env dist/server.js",
     "db:generate": "node --env-file=.env node_modules/drizzle-kit/bin.cjs generate",
-    "db:migrate": "node --env-file=.env --import tsx src/db/migrate.ts",
-    "db:check": "node --env-file=.env --import tsx src/db/check.ts",
+    "db:migrate": "node --env-file-if-exists=.env --import tsx src/db/migrate.ts",
+    "db:migrate:prod": "node --env-file-if-exists=.env dist/db/migrate.js",
+    "db:check": "node --env-file-if-exists=.env --import tsx src/db/check.ts",
+    "db:backup": "node --env-file-if-exists=.env scripts/backup-database.mjs",
     "test": "tsc -p tsconfig.build.json && node --test scripts/*.test.mjs",
     "typecheck": "tsc -p tsconfig.json"
   },

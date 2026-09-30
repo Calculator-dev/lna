@@ -3,6 +3,8 @@ import { z } from "zod"
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().default(4000),
+  // The combined production service binds the API to 127.0.0.1 so only the storefront can reach it.
+  HOST: z.string().default("0.0.0.0"),
   // Comma-separated browser origins allowed to call the API (storefront and CRM).
   CORS_ORIGINS: z.string().optional(),
   // Set when running behind a reverse proxy so rate limits use the client IP: "true" or a hop count.

@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 const emails = process.argv.slice(2)
+// Where the invite link lands; set CRM_URL to the deployed CRM address for production invites.
+const crmUrl = (process.env.CRM_URL || 'http://localhost:3000').replace(/\/$/, '')
 const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
 if (!emails.length || !key || !process.env.SUPABASE_URL) throw new Error('Emails and backend Supabase settings required')
 const client = createClient(process.env.SUPABASE_URL, key, { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(15000) }) } })
@@ -20,7 +22,7 @@ for (const email of emails) {
       ? await client.auth.admin.updateUserById(existing.id, { app_metadata: { ...existing.app_metadata, role: 'admin' } })
       : await client.auth.admin.createUser({ email, email_confirm: false, app_metadata: { role: 'admin' } })
     if (provision.error) throw provision.error
-    const { error } = await client.auth.admin.inviteUserByEmail(email, { redirectTo: 'http://localhost:3000/?setup=password' })
+    const { error } = await client.auth.admin.inviteUserByEmail(email, { redirectTo: `${crmUrl}/?setup=password` })
     if (error) throw error
     console.log(JSON.stringify({ email, sent: true, admin: true }))
   } catch (error) {

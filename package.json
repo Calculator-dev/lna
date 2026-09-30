@@ -10,6 +10,8 @@
     "dev:crm": "pnpm --filter @lna/crm dev --port 3000 --strictPort",
     "dev:storefront": "pnpm --filter @lna/storefront dev --port 3001",
     "build": "pnpm -r build",
+    "build:service": "pnpm --filter @lna/api --filter @lna/storefront build",
+    "start:production": "node scripts/start-production.mjs",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "lint": "eslint ."

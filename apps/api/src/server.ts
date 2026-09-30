@@ -9,7 +9,7 @@ if (env.NODE_ENV === "production" && corsOrigins.length === 0) {
 app
   .listen({
     port: env.PORT,
-    host: "0.0.0.0",
+    host: env.HOST,
   })
   .catch((error) => {
     app.log.error(error)

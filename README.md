@@ -53,6 +53,51 @@ In production:
 - The CRM is a single-page app: configure the host to serve `index.html` for all
   paths (for example `/orders/<id>`).
 
+## Deployment (Render)
+
+`render.yaml` is a Render Blueprint for two services:
+
+- **`lna-shop`** (Starter web service): the API and storefront in one instance, started by
+  `scripts/start-production.mjs`. The storefront serves the public port; the API listens on
+  `127.0.0.1:4000` and browsers reach it at `/backend` on the shop's own origin (a rewrite in
+  `apps/storefront/next.config.mjs`). Migrations run before each deploy; the health check
+  (`/backend/health`) only passes once both processes are up.
+- **`lna-crm`** (free static site): the CRM build, calling the API at `<shop URL>/backend`.
+
+To deploy: in Render, **New → Blueprint**, pick this repository and fill in the prompted values:
+
+| Service | Variable | Value |
+| --- | --- | --- |
+| lna-shop | `NEXT_PUBLIC_SITE_URL` | The shop's public URL, e.g. `https://lna-shop.onrender.com` or the custom domain |
+| lna-shop | `CORS_ORIGINS` | The CRM's URL, e.g. `https://lna-crm.onrender.com` |
+| lna-shop | `DATABASE_URL`, `SUPABASE_*`, `BACKBLAZE_*`, `RESEND_API_KEY`, `ORDER_EMAIL_FROM`, `INQUIRY_NOTIFY_EMAIL` | As in `apps/api/.env` |
+| lna-crm | `VITE_API_URL` | The shop's URL + `/backend` |
+| lna-crm | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | As in `apps/crm/.env.local` |
+
+`NEXT_PUBLIC_*` and `VITE_*` values are built into the apps: redeploy after changing them.
+Then in Supabase → Authentication → URL Configuration, set the Site URL to the CRM's URL and add
+`<CRM URL>/**` to the redirect URLs. Invite admins for production with
+`CRM_URL=<CRM URL> node --env-file=.env scripts/invite-admin.mjs EMAIL` from `apps/api`.
+
+Memory: in a Linux container limited to Starter's 512 MB and 0.5 CPU, the service used about
+135 MB idle and peaked near 300 MB under sustained page and image-resizing load; a 10 MB photo
+upload adds about 60 MB. Each process has a heap cap (`API_HEAP_MB`, `STOREFRONT_HEAP_MB`).
+If Render reports memory restarts, move the service to a larger instance or split the API
+into its own service (point `NEXT_PUBLIC_API_URL`/`API_URL` at it).
+
+Run the same service locally with `pnpm build:service` (with `NEXT_PUBLIC_API_URL=/backend`)
+and `pnpm start:production`.
+
+### Keeping the database active and backed up
+
+On Supabase's free plan, projects pause after about a week of inactivity and are not backed up.
+
+- Schedule a daily request (e.g. cron-job.org) to `<shop URL>/backend/public/catalogue`; it reads
+  the database, unlike `/backend/health`.
+- Back up regularly with `pnpm --dir apps/api db:backup` (needs `pg_dump`): it writes a compressed
+  dump of the app's tables to `apps/api/backups/` (git-ignored). Restore into an empty database
+  with `pg_restore --no-owner --dbname "<url>" <file>.dump`.
+
 ## Database
 
 The API uses PostgreSQL via Drizzle.

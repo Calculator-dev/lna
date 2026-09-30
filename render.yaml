@@ -1,0 +1,104 @@
+# Render Blueprint: one paid web service running the API + storefront together
+# (scripts/start-production.mjs) and the CRM as a free static site.
+# Values marked `sync: false` are asked for when the Blueprint is first applied; see README → Deployment.
+services:
+  - type: web
+    name: lna-shop
+    runtime: node
+    plan: starter
+    region: frankfurt
+    buildCommand: npm install -g pnpm@10.0.0 && pnpm install --frozen-lockfile --prod=false && pnpm build:service
+    # Applies pending database migrations before each deploy goes live.
+    preDeployCommand: pnpm --filter @lna/api db:migrate:prod
+    startCommand: node scripts/start-production.mjs
+    # Passes through the storefront to the API, so it only succeeds when both are up.
+    healthCheckPath: /backend/health
+    buildFilter:
+      paths:
+        - apps/api/**
+        - apps/storefront/**
+        - scripts/start-production.mjs
+        - package.json
+        - pnpm-lock.yaml
+        - pnpm-workspace.yaml
+        - render.yaml
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      # Browsers reach the API through the storefront's own origin (next.config.mjs rewrite).
+      - key: NEXT_PUBLIC_API_URL
+        value: /backend
+      # Public shop address, used for canonical links and the sitemap, e.g. https://lna-shop.onrender.com
+      # or the custom domain. Read at build time: redeploy after changing it.
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false
+      # The CRM's address, e.g. https://lna-crm.onrender.com (the shop itself needs no CORS entry).
+      - key: CORS_ORIGINS
+        sync: false
+      # One trusted hop: Render's proxy appends the visitor's IP, which the storefront passes on.
+      - key: TRUST_PROXY
+        value: "1"
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: BACKBLAZE_ENDPOINT
+        sync: false
+      - key: BACKBLAZE_REGION
+        sync: false
+      - key: BACKBLAZE_KEY_ID
+        sync: false
+      - key: BACKBLAZE_APP_KEY
+        sync: false
+      - key: BACKBLAZE_BUCKET_NAME
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: ORDER_EMAIL_FROM
+        sync: false
+      - key: INQUIRY_NOTIFY_EMAIL
+        sync: false
+
+  - type: web
+    name: lna-crm
+    runtime: static
+    buildCommand: npm install -g pnpm@10.0.0 && pnpm install --frozen-lockfile && pnpm --filter @lna/crm build
+    staticPublishPath: apps/crm/dist
+    buildFilter:
+      paths:
+        - apps/crm/**
+        - package.json
+        - pnpm-lock.yaml
+        - render.yaml
+    # Single-page app: every path serves index.html (e.g. /orders/<id>).
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      # The shop service's address + /backend, e.g. https://lna-shop.onrender.com/backend
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_SUPABASE_URL
+        sync: false
+      # Publishable key only; never the secret key.
+      - key: VITE_SUPABASE_PUBLISHABLE_KEY
+        sync: false
