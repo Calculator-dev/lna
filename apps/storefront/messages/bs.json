@@ -75,16 +75,13 @@
     "categories": {
       "title": "Šta želite da napravimo?",
       "tiles": {
-        "nameSigns": "Natpisi s imenima",
-        "wallDecor": "Zidne dekoracije",
-        "celebrationDecor": "Dekoracije za proslave",
-        "gifts": "Pokloni i uspomene",
-        "businessSigns": "Poslovni natpisi",
-        "keychains": "Privjesci",
-        "houseNumbers": "Kućni brojevi",
-        "monograms": "Monogrami",
-        "forHome": "Za dom",
-        "yourIdea": "Po vašoj ideji"
+        "rahle": "Rahle",
+        "mahrame": "Mahrame",
+        "trays": "Tacne",
+        "decorativeSets": "Dekorativni setovi",
+        "flowers": "Cvijeće",
+        "scarfBouquets": "Buketi od ešarpi",
+        "paintedScarves": "Ručno slikane ešarpe"
       }
     },
     "customStudio": {
@@ -117,7 +114,7 @@
   },
   "shop": {
     "allProducts": "Svi proizvodi",
-    "productCount": "({count} proizvoda)",
+    "productCount": "{count} proizvoda",
     "featured": "Istaknuto",
     "viewProduct": "Pogledaj proizvod",
     "filters": {

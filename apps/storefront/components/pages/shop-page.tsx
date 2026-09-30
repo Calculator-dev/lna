@@ -13,16 +13,19 @@ export async function ShopPage({ locale }: { locale: Locale }) {
 
   return (
     <>
-      <section className="border-b border-border/60">
-        <div className="mx-auto max-w-375 px-4 pb-20 pt-7 md:px-6 md:pb-28 md:pt-8">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Link href={buildPath(locale)} className="transition-colors hover:text-foreground">{common("home")}</Link>
-            <span aria-hidden="true">›</span>
-            <span className="text-foreground">{t("allProducts")}</span>
-          </div>
-          <div className="mt-16 flex flex-wrap items-end gap-x-4 gap-y-2 md:mt-20">
-            <h1 className="text-5xl font-bold tracking-[-0.045em] md:text-6xl">{t("allProducts")}</h1>
-            <p className="pb-1 text-sm text-muted-foreground">{t("productCount", { count: products.length })}</p>
+      <section className="px-2 pt-2 md:px-4 md:pt-4">
+        <div className="relative mx-auto max-w-400 overflow-hidden rounded-4xl bg-primary text-primary-foreground">
+          <span className="ornament absolute inset-x-0 bottom-5 block text-primary-foreground/12" aria-hidden />
+          <div className="relative mx-auto max-w-375 px-4 pb-16 pt-6 md:px-6 md:pb-20 md:pt-7">
+            <nav aria-label={common("home")} className="flex items-center gap-2 text-xs text-primary-foreground/65">
+              <Link href={buildPath(locale)} className="transition-colors hover:text-primary-foreground">{common("home")}</Link>
+              <span aria-hidden="true">/</span>
+              <span className="text-primary-foreground">{t("allProducts")}</span>
+            </nav>
+            <div className="mt-12 flex flex-wrap items-end justify-between gap-6 md:mt-16">
+              <h1 className="font-serif text-6xl leading-[0.9] md:text-8xl">{t("allProducts")}</h1>
+              <p className="rounded-full border border-primary-foreground/25 px-4 py-2 text-sm text-primary-foreground/80">{t("productCount", { count: products.length })}</p>
+            </div>
           </div>
         </div>
       </section>

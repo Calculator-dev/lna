@@ -8,14 +8,15 @@ export default async function NotFound() {
   const common = await getTranslations("common")
   return (
     <div className="mx-auto max-w-3xl px-4 py-24 text-center md:px-6">
-      <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">404</p>
-      <h1 className="mt-4 font-serif text-5xl">{t("title")}</h1>
+      <p className="font-serif text-[140px] italic leading-none text-accent">404</p>
+      <span className="ornament mx-auto mt-4 block w-24 text-accent" aria-hidden />
+      <h1 className="mt-6 font-serif text-5xl">{t("title")}</h1>
       <p className="mt-4 text-sm leading-7 text-muted-foreground">{t("description")}</p>
       <div className="mt-8 flex justify-center gap-4">
-        <Link href={buildPath(locale)} className="inline-flex h-12 items-center justify-center bg-foreground px-6 text-sm tracking-wide text-background">
+        <Link href={buildPath(locale)} className="btn-primary">
           {common("home")}
         </Link>
-        <Link href={buildPath(locale, "/shop")} className="inline-flex h-12 items-center justify-center border border-border px-6 text-sm tracking-wide">
+        <Link href={buildPath(locale, "/shop")} className="btn-outline">
           {common("shop")}
         </Link>
       </div>

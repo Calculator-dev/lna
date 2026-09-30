@@ -3,27 +3,38 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Workshop palette: linen paper, walnut ink, poured-resin teal and honey-toned wood.
+ * `resin` and `honey` double as the material colours on product cards.
+ */
 :root {
-  --background: oklch(0.978 0.01 82);
-  --foreground: oklch(0.245 0.018 60);
-  --card: oklch(0.986 0.01 82);
-  --card-foreground: oklch(0.245 0.018 60);
-  --popover: oklch(0.986 0.01 82);
-  --popover-foreground: oklch(0.245 0.018 60);
-  --primary: oklch(0.245 0.018 60);
-  --primary-foreground: oklch(0.985 0.008 82);
-  --secondary: oklch(0.944 0.019 80);
-  --secondary-foreground: oklch(0.245 0.018 60);
-  --muted: oklch(0.944 0.019 80);
-  --muted-foreground: oklch(0.49 0.02 62);
-  --accent: oklch(0.58 0.13 47);
-  --accent-foreground: oklch(0.985 0.008 82);
-  --destructive: oklch(0.57 0.21 28);
-  --destructive-foreground: oklch(0.985 0.008 82);
-  --border: oklch(0.89 0.019 79);
-  --input: oklch(0.89 0.019 79);
-  --ring: oklch(0.58 0.13 47);
-  --radius: 0.24rem;
+  --background: #f4eee3;
+  --foreground: #2b1d14;
+  --card: #fbf7f0;
+  --card-foreground: #2b1d14;
+  --popover: #fbf7f0;
+  --popover-foreground: #2b1d14;
+  --primary: #1e4f4c;
+  --primary-foreground: #f4eee3;
+  --secondary: #eae0d0;
+  --secondary-foreground: #2b1d14;
+  --muted: #eae0d0;
+  --muted-foreground: #6b5646;
+  --accent: #c98a3b;
+  --accent-foreground: #2b1d14;
+  --destructive: #b3372b;
+  --destructive-foreground: #fbf7f0;
+  --border: #dccfbb;
+  --input: #d3c4ad;
+  --ring: #1e4f4c;
+  --radius: 0.9rem;
+  --walnut: #33231a;
+  --resin: #1e4f4c;
+  --resin-soft: #d5e3dc;
+  --honey: #c98a3b;
+  --honey-soft: #efdcbf;
+  --clay: #e7d6c3;
+  --linen: #efe4d4;
   --sidebar: var(--background);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
@@ -35,8 +46,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
   --font-mono: ui-monospace, SFMono-Regular, monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -57,9 +68,16 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 2px);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 2px);
+  --color-walnut: var(--walnut);
+  --color-resin: var(--resin);
+  --color-resin-soft: var(--resin-soft);
+  --color-honey: var(--honey);
+  --color-honey-soft: var(--honey-soft);
+  --color-clay: var(--clay);
+  --color-linen: var(--linen);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 3px);
+  --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 6px);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -82,10 +100,56 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "liga", "ss01", "cv11";
   }
 
   a {
     @apply transition-colors;
   }
+
+  ::selection {
+    background: var(--honey-soft);
+    color: var(--foreground);
+  }
+}
+
+@layer components {
+  /* Carved rhombus band inspired by the woodwork on a sehara chest; takes the text colour. */
+  .ornament {
+    height: 14px;
+    background-color: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='14'%3E%3Cpath d='M14 1.5 20.5 7 14 12.5 7.5 7Z M14 5 11.6 7 14 9 16.4 7Z M0 0H4.5L0 4.5Z M28 0H23.5L28 4.5Z M0 14H4.5L0 9.5Z M28 14H23.5L28 9.5Z' fill='black' fill-rule='evenodd'/%3E%3C/svg%3E") repeat-x left center / 28px 14px;
+  }
+
+  /* Rounded "lid" frame used for hero, category and editorial imagery. */
+  .arch {
+    border-radius: 999px 999px var(--radius) var(--radius);
+  }
+}
+
+@utility eyebrow {
+  @apply text-[11px] font-semibold uppercase tracking-[0.22em];
+}
+
+@utility btn {
+  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold transition-colors disabled:opacity-60;
+}
+
+@utility btn-primary {
+  @apply btn bg-primary text-primary-foreground hover:bg-primary/90;
+}
+
+@utility btn-ink {
+  @apply btn bg-foreground text-background hover:bg-foreground/85;
+}
+
+@utility btn-outline {
+  @apply btn border border-foreground/25 text-foreground hover:border-foreground hover:bg-foreground hover:text-background;
+}
+
+@utility field {
+  @apply mt-2 w-full rounded-lg border border-input bg-card px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15;
+}
+
+@utility field-label {
+  @apply block text-xs font-semibold text-foreground/75;
 }

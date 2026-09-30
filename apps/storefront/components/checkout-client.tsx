@@ -63,14 +63,14 @@ export function CheckoutClient({ locale }: { locale: Locale }) {
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-3xl border border-border/60 p-10 text-center">
+      <div className="mx-auto mb-20 max-w-3xl rounded-4xl bg-secondary p-10 text-center">
         <h2 className="font-serif text-4xl">{cart("emptyTitle")}</h2>
         <p className="mt-4 text-sm leading-7 text-muted-foreground">
           {t("emptyDescription")}
         </p>
         <Link
           href={locale === "en" ? "/en/shop" : "/shop"}
-          className="mt-8 inline-flex h-12 items-center justify-center bg-foreground px-6 text-sm tracking-wide text-background"
+          className="btn-primary mt-8"
         >
           {t("backToShop")}
         </Link>
@@ -79,8 +79,8 @@ export function CheckoutClient({ locale }: { locale: Locale }) {
   }
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-10 px-4 pb-16 md:grid-cols-[1.15fr_0.85fr] md:px-6 md:pb-24">
-      <form onSubmit={handleSubmit} className="space-y-8">
+    <div className="mx-auto grid max-w-375 items-start gap-8 px-4 pb-16 md:grid-cols-[1.15fr_0.85fr] md:px-6 md:pb-24 lg:gap-12">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <Section title={t("sections.contact")}>
           <Input id="fullName" label={t("fields.fullName")} required />
           <div className="grid gap-4 md:grid-cols-2">
@@ -99,65 +99,65 @@ export function CheckoutClient({ locale }: { locale: Locale }) {
         </Section>
 
         <Section title={t("sections.notes")}>
-          <label htmlFor="notes" className="block text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+          <label htmlFor="notes" className="field-label">
             {t("fields.notes")}
           </label>
           <textarea
             id="notes"
             name="notes"
             rows={4}
-            className="mt-2 w-full border border-border bg-transparent px-3 py-3 text-sm text-foreground outline-none transition-colors focus:border-foreground"
+            className="field resize-none"
             placeholder={t("fields.notesPlaceholder")}
           />
         </Section>
 
-        <div className="border border-border/60 bg-secondary/30 p-5 text-sm leading-7 text-muted-foreground">
+        <div className="rounded-2xl bg-resin-soft p-5 text-sm leading-7 text-primary">
           {t("confirmationNote")}
         </div>
 
         <button
           type="submit"
           disabled={submitting}
-          className="flex h-12 w-full items-center justify-center bg-foreground text-sm tracking-wide text-background transition-colors hover:bg-foreground/90 disabled:opacity-60"
+          className="btn-primary w-full"
         >
           {submitting ? t("submitting") : t("submit", { total: formatPrice(total, locale) })}
         </button>
       </form>
 
-      <aside className="h-fit border border-border/60 bg-background p-6 md:sticky md:top-24">
-        <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">{t("summary.title")}</p>
+      <aside className="h-fit rounded-4xl bg-walnut p-6 text-linen md:sticky md:top-28 md:p-8">
+        <p className="font-serif text-3xl">{t("summary.title")}</p>
         <ul className="mt-5 space-y-4">
           {items.map((item) => (
             <li key={item.lineId} className="flex gap-3">
-              <div className="relative h-20 w-16 overflow-hidden rounded-sm bg-muted">
+              <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-xl bg-linen/10">
                 <Image unoptimized={isSvg(item.image)} src={item.image} alt={item.name} fill sizes="64px" className="object-cover" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-foreground">{item.name}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="font-medium">{item.name}</p>
+                <p className="text-sm text-linen/60">
                   {t("summary.quantity", { quantity: item.quantity })}
                 </p>
-                {item.dimensions && <p className="mt-1 text-xs text-muted-foreground">{cart("dimensions", { dimensions: item.dimensions })}</p>}
-                {item.variantSku && <p className="mt-1 text-xs text-muted-foreground">SKU: {item.variantSku}</p>}
-                {item.personalization && <p className="mt-1 text-xs text-muted-foreground">{item.personalization}</p>}
+                {item.dimensions && <p className="mt-1 text-xs text-linen/60">{cart("dimensions", { dimensions: item.dimensions })}</p>}
+                {item.variantSku && <p className="mt-1 text-xs text-linen/60">SKU: {item.variantSku}</p>}
+                {item.personalization && <p className="mt-1 text-xs text-linen/60">{item.personalization}</p>}
               </div>
               <p className="text-sm">{formatPrice(item.price * item.quantity, locale)}</p>
             </li>
           ))}
         </ul>
 
-        <dl className="mt-6 space-y-3 border-t border-border/60 pt-4 text-sm">
+        <dl className="mt-6 space-y-3 border-t border-linen/15 pt-4 text-sm">
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">{t("summary.products")}</dt>
+            <dt className="text-linen/60">{t("summary.products")}</dt>
             <dd>{formatPrice(subtotal, locale)}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">{t("sections.shipping")}</dt>
+            <dt className="text-linen/60">{t("sections.shipping")}</dt>
             <dd>{shipping === 0 ? t("summary.free") : formatPrice(shipping, locale)}</dd>
           </div>
-          <div className="flex justify-between border-t border-border/60 pt-3">
+          <div className="flex items-baseline justify-between border-t border-linen/15 pt-3">
             <dt>{t("summary.total")}</dt>
-            <dd className="font-serif text-2xl">{formatPrice(total, locale)}</dd>
+            <dd className="font-serif text-4xl text-honey">{formatPrice(total, locale)}</dd>
           </div>
         </dl>
       </aside>
@@ -167,8 +167,8 @@ export function CheckoutClient({ locale }: { locale: Locale }) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section>
-      <h2 className="text-xs uppercase tracking-[0.22em] text-muted-foreground">{title}</h2>
+    <section className="rounded-3xl border border-border bg-card p-5 md:p-7">
+      <h2 className="font-serif text-2xl">{title}</h2>
       <div className="mt-4 space-y-4">{children}</div>
     </section>
   )
@@ -181,14 +181,14 @@ function Input({
 }: { id: string; label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div>
-      <label htmlFor={id} className="block text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+      <label htmlFor={id} className="field-label">
         {label}
       </label>
       <input
         id={id}
         name={id}
         {...props}
-        className="mt-2 w-full border border-border bg-transparent px-3 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground"
+        className="field"
       />
     </div>
   )

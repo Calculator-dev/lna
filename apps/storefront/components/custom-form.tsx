@@ -37,7 +37,8 @@ export function CustomForm({ locale }: { locale: Locale }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4 border border-border/60 bg-secondary/30 p-6">
+    <form onSubmit={handleSubmit} className="grid gap-5 rounded-4xl border border-border bg-card p-6 shadow-[0_24px_60px_-40px_rgba(43,29,20,0.45)] md:p-9">
+      <span className="ornament block w-24 text-accent" aria-hidden />
       <div className="grid gap-4 md:grid-cols-2">
         <Input id="fullName" label={t("fullName")} required minLength={2} maxLength={160} />
         <Input id="email" label={t("email")} type="email" required maxLength={190} />
@@ -48,7 +49,7 @@ export function CustomForm({ locale }: { locale: Locale }) {
       </div>
       <Input id="dimensions" label={t("dimensions")} maxLength={300} />
       <div>
-        <label htmlFor="brief" className="block text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+        <label htmlFor="brief" className="field-label">
           {t("brief")}
         </label>
         <textarea
@@ -58,11 +59,11 @@ export function CustomForm({ locale }: { locale: Locale }) {
           minLength={10}
           maxLength={5000}
           rows={5}
-          className="mt-2 w-full border border-border bg-background px-3 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground"
+          className="field resize-none"
           placeholder={t("briefPlaceholder")}
         />
       </div>
-      <button type="submit" disabled={sending} className="mt-2 flex h-12 items-center justify-center bg-foreground text-sm tracking-wide text-background disabled:opacity-60">
+      <button type="submit" disabled={sending} className="btn-primary mt-2 w-full">
         {sending ? t("sending") : t("submit")}
       </button>
     </form>
@@ -76,14 +77,14 @@ function Input({
 }: { id: string; label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div>
-      <label htmlFor={id} className="block text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+      <label htmlFor={id} className="field-label">
         {label}
       </label>
       <input
         id={id}
         name={id}
         {...props}
-        className="mt-2 w-full border border-border bg-background px-3 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground"
+        className="field"
       />
     </div>
   )

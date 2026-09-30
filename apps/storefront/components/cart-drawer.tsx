@@ -25,35 +25,36 @@ export function CartDrawer({ locale }: { locale: Locale }) {
       )}
       inert={!isOpen}
     >
-      <div className="absolute inset-0 bg-foreground/35" onClick={() => setOpen(false)} />
+      <div className="absolute inset-0 bg-walnut/50" onClick={() => setOpen(false)} />
       <aside
         ref={panel}
         role="dialog"
         aria-modal="true"
         aria-label={common("cart")}
         className={cn(
-          "absolute inset-y-0 right-0 flex w-full max-w-md flex-col bg-background transition-transform",
-          isOpen ? "translate-x-0" : "translate-x-full",
+          "absolute inset-y-0 right-0 flex w-full max-w-md flex-col bg-background transition-transform sm:inset-y-2 sm:right-2 sm:rounded-4xl sm:shadow-2xl",
+          isOpen ? "translate-x-0" : "translate-x-[calc(100%+1rem)]",
         )}
       >
         <div className="flex items-center justify-between border-b border-border/60 px-5 py-4">
           <div className="flex flex-1 items-center justify-between gap-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("drawerTitle")}</p>
+            <p className="font-serif text-3xl">{t("drawerTitle")}</p>
             <Link
               href={cartHref}
               onClick={() => setOpen(false)}
-              className="border-b border-foreground pb-0.5 text-xs font-medium text-foreground transition-opacity hover:opacity-60"
+              className="rounded-full border border-input px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-foreground"
             >
               {t("viewCart")}
             </Link>
           </div>
-          <button type="button" className="ml-3 flex h-10 w-10 shrink-0 items-center justify-center" onClick={() => setOpen(false)} aria-label={t("closeCart")}>
+          <button type="button" className="ml-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary" onClick={() => setOpen(false)} aria-label={t("closeCart")}>
             <X className="h-5 w-5" strokeWidth={1.5} aria-hidden />
           </button>
         </div>
 
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+            <span className="ornament mb-6 block w-20 text-accent" aria-hidden />
             <p className="font-serif text-3xl">{t("emptyTitle")}</p>
             <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
               {t("drawerEmptyDescription")}
@@ -64,7 +65,7 @@ export function CartDrawer({ locale }: { locale: Locale }) {
             <ul className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
               {items.map((item) => (
                 <li key={item.lineId} className="flex gap-3 border-b border-border/50 pb-4">
-                  <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-sm bg-muted">
+                  <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-2xl bg-muted">
                     <Image unoptimized={isSvg(item.image)} src={item.image} alt={item.name} fill sizes="80px" className="object-cover" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -80,7 +81,7 @@ export function CartDrawer({ locale }: { locale: Locale }) {
                       </button>
                     </div>
                     {item.personalization && <p className="mt-2 text-xs text-muted-foreground">{item.personalization}</p>}
-                    <div className="mt-3 inline-flex items-center border border-border">
+                    <div className="mt-3 inline-flex items-center rounded-full border border-input bg-card">
                       <button type="button" className="flex h-9 w-9 items-center justify-center" onClick={() => updateQuantity(item.lineId, item.quantity - 1)} aria-label={common("decreaseQuantity")}>
                         <Minus className="h-4 w-4" strokeWidth={1.5} aria-hidden />
                       </button>
@@ -97,12 +98,12 @@ export function CartDrawer({ locale }: { locale: Locale }) {
             <div className="border-t border-border/60 px-5 py-5">
               <div className="mb-4 flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{t("drawerSubtotal")}</span>
-                <span className="font-serif text-2xl">{formatPrice(subtotal, locale)}</span>
+                <span className="font-serif text-3xl">{formatPrice(subtotal, locale)}</span>
               </div>
               <Link
                 href={checkoutHref}
                 onClick={() => setOpen(false)}
-                className="flex h-12 items-center justify-center bg-foreground text-sm tracking-wide text-background transition-colors hover:bg-foreground/90"
+                className="btn-primary w-full"
               >
                 {t("proceedToCheckout")}
               </Link>

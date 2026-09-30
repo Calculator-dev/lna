@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Inter, Fraunces } from "next/font/google"
+import { Bricolage_Grotesque, Instrument_Serif } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { NextIntlClientProvider } from "next-intl"
 import { CartProvider } from "@/components/cart-provider"
@@ -9,15 +9,18 @@ import { generateLocaleParams, resolveLocale, type LocaleParams } from "@/lib/lo
 import { getBaseUrl } from "@/lib/seo"
 import "../globals.css"
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+// latin-ext covers the Bosnian letters č, ć, đ, š and ž.
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-bricolage",
   display: "swap",
 })
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-fraunces",
+const instrument = Instrument_Serif({
+  subsets: ["latin", "latin-ext"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-instrument",
   display: "swap",
 })
 
@@ -36,7 +39,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#f6efe3",
+  themeColor: "#f4eee3",
   width: "device-width",
   initialScale: 1,
 }
@@ -47,7 +50,7 @@ export default async function RootLayout({
 }: Readonly<LocaleParams & { children: React.ReactNode }>) {
   const locale = await resolveLocale(params)
   return (
-    <html lang={locale} data-scroll-behavior="smooth" className={`${inter.variable} ${fraunces.variable}`}>
+    <html lang={locale} data-scroll-behavior="smooth" className={`${bricolage.variable} ${instrument.variable}`}>
       <body suppressHydrationWarning className="min-h-screen bg-background font-sans antialiased">
         <NextIntlClientProvider>
           <CartProvider>

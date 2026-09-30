@@ -10,16 +10,17 @@ export function SuccessPage({ locale, orderNumber }: { locale: Locale; orderNumb
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-20 text-center md:px-6">
-      <div className="border border-border/60 bg-secondary/30 p-10 md:p-14">
-        <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">{t("eyebrow")}</p>
-        <h1 className="mt-4 font-serif text-5xl leading-tight text-foreground">
+      <div className="rounded-4xl bg-primary p-10 text-primary-foreground md:p-14">
+        <span className="ornament mx-auto block w-28 text-honey" aria-hidden />
+        <p className="eyebrow mt-6 text-honey">{t("eyebrow")}</p>
+        <h1 className="mt-4 font-serif text-5xl leading-tight md:text-6xl">
           {t("title")}
         </h1>
-        <p className="mt-5 text-sm leading-7 text-muted-foreground">
+        <p className="mt-5 text-sm leading-7 text-primary-foreground/75">
           {t("description")}
         </p>
-        {orderNumber && orderNumberPattern.test(orderNumber) && <p className="mt-6 font-medium text-foreground">{orderNumber}</p>}
-        <Link href={href} className="mt-8 inline-flex h-12 items-center justify-center bg-foreground px-6 text-sm tracking-wide text-background">
+        {orderNumber && orderNumberPattern.test(orderNumber) && <p className="mx-auto mt-6 w-fit rounded-full bg-primary-foreground/10 px-5 py-2 font-mono text-sm">{orderNumber}</p>}
+        <Link href={href} className="btn mt-8 bg-honey text-accent-foreground hover:bg-honey/85">
           {t("backToShop")}
         </Link>
       </div>

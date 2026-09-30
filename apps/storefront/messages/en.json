@@ -75,16 +75,13 @@
     "categories": {
       "title": "What would you like us to make?",
       "tiles": {
-        "nameSigns": "Name signs",
-        "wallDecor": "Wall decor",
-        "celebrationDecor": "Celebration decor",
-        "gifts": "Gifts and keepsakes",
-        "businessSigns": "Business signage",
-        "keychains": "Keychains",
-        "houseNumbers": "House numbers",
-        "monograms": "Monograms",
-        "forHome": "For the home",
-        "yourIdea": "Made from your idea"
+        "rahle": "Rahle",
+        "mahrame": "Mahrama cloths",
+        "trays": "Trays",
+        "decorativeSets": "Decorative sets",
+        "flowers": "Flowers",
+        "scarfBouquets": "Scarf bouquets",
+        "paintedScarves": "Hand-painted scarves"
       }
     },
     "customStudio": {
@@ -117,7 +114,7 @@
   },
   "shop": {
     "allProducts": "All products",
-    "productCount": "({count} products)",
+    "productCount": "{count} products",
     "featured": "Featured",
     "viewProduct": "View product",
     "filters": {

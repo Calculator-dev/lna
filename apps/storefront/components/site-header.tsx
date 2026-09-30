@@ -11,12 +11,14 @@ import { useCart } from "@/components/cart-provider";
 import { CartDrawer } from "@/components/cart-drawer";
 import { alternateLocalePath, buildPath, siteName, type Locale } from "@/lib/products";
 import { cn } from "@/lib/utils";
+import { Wordmark } from "@/components/wordmark";
 
 const otherLocale: Record<Locale, Locale> = { bs: "en", en: "bs" };
 
 export function SiteHeader({ locale }: { locale: Locale }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const menuPanel = useModalPanel<HTMLElement>(menuOpen, () => setMenuOpen(false));
   const { totalItems, setOpen, shippingPolicy } = useCart();
   const t = useTranslations("header");
@@ -34,58 +36,29 @@ export function SiteHeader({ locale }: { locale: Locale }) {
 
   return (
     <>
-      <div className="bg-black px-3 py-2 text-center text-[9px] font-medium uppercase tracking-[0.14em] text-white sm:text-[11px] sm:tracking-[0.2em]">
-        {t("freeDelivery", { amount: String(shippingPolicy.freeFrom) })}
+      <div className="bg-primary px-3 py-2 text-primary-foreground">
+        <div className="mx-auto flex max-w-375 items-center justify-center gap-4 text-center text-[11px] font-medium tracking-[0.04em] sm:text-xs">
+          <span className="ornament hidden w-20 opacity-40 sm:block" aria-hidden />
+          {t("freeDelivery", { amount: String(shippingPolicy.freeFrom) })}
+          <span className="ornament hidden w-20 opacity-40 sm:block" aria-hidden />
+        </div>
       </div>
 
-      <header className="sticky top-0 z-50 border-b border-border bg-white/95 backdrop-blur-xl">
-        <div className="mx-auto grid h-17 max-w-375 grid-cols-[1fr_auto] items-center gap-3 px-4 md:h-19 md:grid-cols-[220px_1fr] md:px-6">
-          <div className="flex min-w-0 items-center gap-2">
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center lg:hidden"
-              aria-label={t("openMenu")}
-              onClick={() => setMenuOpen(true)}
-            >
-              <Menu className="h-5 w-5" strokeWidth={1.5} />
-            </button>
-            <Link
-              href={buildPath(locale)}
-              className="text-xl font-black uppercase tracking-tighter text-foreground sm:text-2xl md:text-[26px]"
-            >
-              {siteName}
-            </Link>
-          </div>
+      <header className="sticky top-0 z-50 border-b border-border/80 bg-background/90 backdrop-blur-xl">
+        <div className="mx-auto flex h-18 max-w-375 items-center gap-3 px-4 md:h-20 md:px-6">
+          <button
+            type="button"
+            className="-ml-2 flex h-10 w-10 items-center justify-center rounded-full hover:bg-secondary xl:hidden"
+            aria-label={t("openMenu")}
+            onClick={() => setMenuOpen(true)}
+          >
+            <Menu className="h-5 w-5" strokeWidth={1.6} />
+          </button>
+          <Link href={buildPath(locale)} aria-label={siteName} className="shrink-0 text-foreground">
+            <Wordmark />
+          </Link>
 
-          <div className="hidden md:flex md:items-center md:justify-evenly md:gap-6">
-            <div className="w-full max-w-140">
-              <SearchForm action={shopHref} id="desktop" />
-            </div>
-            <HeaderActions
-              locale={locale}
-              totalItems={totalItems}
-              onCartOpen={() => setOpen(true)}
-              className="shrink-0"
-            />
-          </div>
-
-          <HeaderActions
-            locale={locale}
-            totalItems={totalItems}
-            onCartOpen={() => setOpen(true)}
-            className="md:hidden"
-          />
-        </div>
-
-        <div className="border-t border-border/60 px-4 py-3 md:hidden">
-          <SearchForm action={shopHref} id="mobile" />
-        </div>
-
-        <nav
-          className="hidden border-t border-border/60 lg:block"
-          aria-label={t("mainNavigation")}
-        >
-          <div className="mx-auto flex h-12 max-w-375 items-center justify-center gap-8 px-6 xl:gap-11">
+          <nav className="mx-auto hidden items-center gap-1 xl:flex" aria-label={t("mainNavigation")}>
             {navLinks.map((item) => {
               const itemPath = `${localePrefix}${item.href.split("?")[0]}`;
               const active = !item.href.includes("?") && pathname === itemPath;
@@ -93,23 +66,43 @@ export function SiteHeader({ locale }: { locale: Locale }) {
                 <Link
                   key={item.href}
                   href={`${localePrefix}${item.href}`}
+                  aria-current={active ? "page" : undefined}
                   className={cn(
-                    "relative flex h-full items-center text-[13px] font-medium text-foreground/80 transition-colors hover:text-foreground",
-                    active &&
-                      "text-foreground after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-foreground",
+                    "rounded-full px-4 py-2 text-[13.5px] font-medium text-foreground/75 transition-colors hover:bg-secondary hover:text-foreground",
+                    active && "bg-foreground text-background hover:bg-foreground hover:text-background",
                   )}
                 >
                   {item.label}
                 </Link>
               );
             })}
+          </nav>
+
+          <HeaderActions
+            locale={locale}
+            totalItems={totalItems}
+            onCartOpen={() => setOpen(true)}
+            searchOpen={searchOpen}
+            onSearchToggle={() => {
+              const opening = !searchOpen;
+              setSearchOpen(opening);
+              // Wait for the bar to become visible before moving focus into it.
+              if (opening) requestAnimationFrame(() => document.getElementById("site-search-bar")?.focus());
+            }}
+            className="ml-auto xl:ml-0"
+          />
+        </div>
+
+        <div className={cn("border-t border-border/60 px-4 py-3 md:px-6", searchOpen ? "md:block" : "md:hidden")}>
+          <div className="mx-auto max-w-2xl">
+            <SearchForm action={shopHref} id="bar" />
           </div>
-        </nav>
+        </div>
       </header>
 
       <div
         className={cn(
-          "fixed inset-0 z-60 transition-opacity lg:hidden",
+          "fixed inset-0 z-60 transition-opacity xl:hidden",
           menuOpen
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0",
@@ -120,7 +113,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           type="button"
           tabIndex={-1}
           aria-hidden
-          className="absolute inset-0 bg-foreground/40"
+          className="absolute inset-0 bg-walnut/50"
           onClick={() => setMenuOpen(false)}
         />
         <aside
@@ -129,47 +122,42 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           aria-modal="true"
           aria-label={t("menu")}
           className={cn(
-            "absolute inset-y-0 left-0 flex w-[90%] max-w-sm flex-col bg-background transition-transform duration-300",
+            "absolute inset-y-0 left-0 flex w-[90%] max-w-sm flex-col rounded-r-3xl bg-background transition-transform duration-300",
             menuOpen ? "translate-x-0" : "-translate-x-full",
           )}
         >
-          <div className="flex items-center justify-between border-b border-border px-5 py-5">
+          <div className="flex items-center justify-between px-5 py-5">
             <Link
               href={buildPath(locale)}
               onClick={() => setMenuOpen(false)}
-              className="text-xl font-black uppercase tracking-tighter"
+              aria-label={siteName}
             >
-              {siteName}
+              <Wordmark />
             </Link>
             <button
               type="button"
               onClick={() => setMenuOpen(false)}
               aria-label={t("closeMenu")}
-              className="flex h-10 w-10 items-center justify-center"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary"
             >
-              <X className="h-5 w-5" strokeWidth={1.5} />
+              <X className="h-5 w-5" strokeWidth={1.6} />
             </button>
           </div>
-          <div className="border-b border-border p-5">
-            <SearchForm
-              action={shopHref}
-              onSubmit={() => setMenuOpen(false)}
-              id="drawer"
-            />
-          </div>
-          <nav className="flex flex-1 flex-col overflow-y-auto px-5 py-2">
-            {navLinks.map((item) => (
+          <span className="ornament mx-5 text-accent" aria-hidden />
+          <nav className="flex flex-1 flex-col overflow-y-auto px-5 py-4">
+            {navLinks.map((item, index) => (
               <Link
                 key={item.href}
                 href={`${localePrefix}${item.href}`}
                 onClick={() => setMenuOpen(false)}
-                className="border-b border-border/60 py-4 text-base font-medium"
+                className="flex items-baseline gap-4 border-b border-border/70 py-3.5 font-serif text-[28px] leading-tight transition-colors hover:text-primary"
               >
+                <span className="w-6 font-sans text-xs font-semibold text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
                 {item.label}
               </Link>
             ))}
           </nav>
-          <div className="border-t border-border p-5 text-xs leading-6 text-muted-foreground">
+          <div className="m-4 rounded-2xl bg-primary p-5 text-sm leading-6 text-primary-foreground/85">
             {t("tagline")}
           </div>
         </aside>
@@ -197,26 +185,26 @@ function SearchForm({
       action={action}
       onSubmit={onSubmit}
       className={cn(
-        "flex h-10 w-full items-center border border-border bg-[#f7f7f5] transition-colors focus-within:border-foreground",
+        "flex h-11 w-full items-center rounded-full border border-input bg-card pl-1 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15",
         className,
       )}
     >
       <label htmlFor={`site-search-${id}`} className="sr-only">
         {t("searchLabel")}
       </label>
+      <Search className="ml-3 h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.6} aria-hidden />
       <input
         id={`site-search-${id}`}
         name="q"
         type="search"
         placeholder={t("searchLabel")}
-        className="min-w-0 flex-1 bg-transparent px-4 text-sm outline-none placeholder:text-muted-foreground"
+        className="min-w-0 flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted-foreground"
       />
       <button
         type="submit"
-        className="flex h-full w-11 items-center justify-center"
-        aria-label={t("searchButton")}
+        className="mr-1 h-9 rounded-full bg-foreground px-4 text-xs font-semibold text-background transition-colors hover:bg-foreground/85"
       >
-        <Search className="h-4 w-4" strokeWidth={1.5} />
+        {t("searchButton")}
       </button>
     </form>
   );
@@ -226,18 +214,35 @@ function HeaderActions({
   locale,
   totalItems,
   onCartOpen,
+  searchOpen,
+  onSearchToggle,
   className,
 }: {
   locale: Locale;
   totalItems: number;
   onCartOpen: () => void;
+  searchOpen: boolean;
+  onSearchToggle: () => void;
   className?: string;
 }) {
   const common = useTranslations("common");
+  const t = useTranslations("header");
   return (
     <div
-      className={cn("flex items-center justify-end gap-1 sm:gap-2", className)}
+      className={cn("flex items-center justify-end gap-1 sm:gap-1.5", className)}
     >
+      <button
+        type="button"
+        onClick={onSearchToggle}
+        aria-expanded={searchOpen}
+        aria-label={t("searchLabel")}
+        className={cn(
+          "hidden h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-secondary md:flex",
+          searchOpen && "bg-secondary",
+        )}
+      >
+        {searchOpen ? <X className="h-4.5 w-4.5" strokeWidth={1.6} /> : <Search className="h-4.5 w-4.5" strokeWidth={1.6} />}
+      </button>
       {/* The query string is only known client-side; static pages render the plain path first. */}
       <Suspense fallback={<LanguageLink locale={locale} />}>
         <LanguageLinkWithQuery locale={locale} />
@@ -245,19 +250,16 @@ function HeaderActions({
       <button
         type="button"
         onClick={onCartOpen}
-        className="relative flex h-10 items-center justify-center gap-2 px-2 sm:px-3"
-        aria-label={common("cart")}
+        className="relative ml-1 flex h-10 items-center justify-center gap-2 rounded-full bg-foreground px-3.5 text-background transition-colors hover:bg-foreground/85 sm:px-4"
+        aria-label={`${common("cart")} (${totalItems})`}
       >
-        <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
-        <span className="hidden text-sm font-medium md:inline">
+        <ShoppingBag className="h-4.5 w-4.5" strokeWidth={1.6} />
+        <span className="hidden text-sm font-semibold sm:inline">
           {common("cart")}
         </span>
-        <span className="hidden text-sm md:inline">({totalItems})</span>
-        {totalItems > 0 && (
-          <span className="absolute right-0 top-0 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-[10px] text-white md:hidden">
-            {totalItems}
-          </span>
-        )}
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-bold text-accent-foreground">
+          {totalItems}
+        </span>
       </button>
     </div>
   );
@@ -274,7 +276,7 @@ function LanguageLink({ locale, search }: { locale: Locale; search?: string }) {
     <Link
       href={alternateLocalePath(pathname, search)}
       hrefLang={otherLocale[locale]}
-      className="inline-flex h-10 items-center justify-center px-2 text-xs font-medium tracking-[0.16em] text-foreground transition-opacity hover:opacity-60 sm:px-3"
+      className="inline-flex h-10 min-w-10 items-center justify-center rounded-full border border-border px-3 text-xs font-semibold tracking-[0.12em] text-foreground transition-colors hover:border-foreground"
     >
       {t("switchLanguage")}
     </Link>
