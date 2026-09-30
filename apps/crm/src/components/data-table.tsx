@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { Link } from "react-router"
 import { Button, buttonVariants } from "./ui/button"
 import { Card } from "./ui/card"
@@ -9,13 +10,16 @@ export type TableState<T> = { data?: T[]; isPending: boolean; error: Error | nul
 
 export function DataTable<T extends Row>({ query, columns, rowHref, actionLabel = "Uredi", emptyText = "Još nema stavki." }: {
   query: TableState<T>
-  columns: Array<{ key: keyof T & string; label: string }>
+  /** `render` replaces the plain text cell, e.g. for images. */
+  columns: Array<{ key: keyof T & string; label: string; render?: (row: T) => ReactNode }>
   rowHref?: (row: T) => string
   actionLabel?: string
   emptyText?: string
 }) {
   const span = columns.length + (rowHref ? 1 : 0)
   const rows = query.data ?? []
+  // Custom cells (e.g. images) don't make a readable name for the row's action link.
+  const labelKey = (columns.find(column => !column.render) ?? columns[0]).key
   return (
     <Card className="mt-6 overflow-x-auto p-6">
       <table className="w-full text-left text-sm">
@@ -36,10 +40,10 @@ export function DataTable<T extends Row>({ query, columns, rowHref, actionLabel 
           {query.data && rows.length === 0 && <tr><td colSpan={span} className="py-8 text-muted-foreground">{emptyText}</td></tr>}
           {rows.map(row => (
             <tr key={row.id} className="border-t border-border">
-              {columns.map(column => <td key={column.key} className="py-4 pr-4">{row[column.key]}</td>)}
+              {columns.map(column => <td key={column.key} className="py-4 pr-4 align-middle">{column.render ? column.render(row) : row[column.key]}</td>)}
               {rowHref && (
                 <td className="py-4 text-right">
-                  <Link to={rowHref(row)} className={buttonVariants({ variant: "outline" })} aria-label={`${actionLabel}: ${row[columns[0].key]}`}>{actionLabel}</Link>
+                  <Link to={rowHref(row)} className={buttonVariants({ variant: "outline" })} aria-label={`${actionLabel}: ${row[labelKey]}`}>{actionLabel}</Link>
                 </td>
               )}
             </tr>

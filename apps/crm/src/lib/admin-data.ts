@@ -24,6 +24,8 @@ export type AdminProduct = {
   type: string;
   price: number;
   translations: Record<string, { name: string }>;
+  /** Main product image for list thumbnails; null when none has been uploaded. */
+  primaryImage?: { url: string; alt: { bs?: string; en?: string } } | null;
 };
 const productType = (type: string) =>
   type === "custom"
@@ -79,6 +81,8 @@ export function productRows(products: AdminProduct[]) {
       product.sku,
     type: productType(product.type),
     price: formatMoney(product.price),
+    image: product.primaryImage?.url ?? "",
+    imageAlt: product.primaryImage?.alt.bs ?? "",
   }));
 }
 

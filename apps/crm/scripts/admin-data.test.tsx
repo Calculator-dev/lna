@@ -7,6 +7,7 @@ import { seedDashboard, seedProducts } from './fixtures.ts'
 import { dashboardView, orderRows, productRows } from '../src/lib/admin-data.ts'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { routes } from '../src/app.tsx'
+import { ProductsPage } from '../src/pages/products.tsx'
 
 function render(client: QueryClient, element: React.ReactElement | null, path = '/') {
   const router = createMemoryRouter(element ? [{ path: '*', element }] : routes, { initialEntries: [path] })
@@ -33,6 +34,26 @@ test('API proizvodi se mapiraju u lokalizovane ćelije tabele', () => {
   assert.equal(products[0].name, 'Monogram za vjenčanje')
   assert.equal(products[0].price, '45,00\u00a0KM')
   assert.deepEqual(productRows([]), [])
+  const [withImage, withoutImage] = productRows([
+    { ...seedProducts[0], primaryImage: { url: 'https://img.example/m1.webp', alt: { bs: 'Monogram od hrasta' } } },
+    { ...seedProducts[0], primaryImage: null },
+  ])
+  assert.equal(withImage.image, 'https://img.example/m1.webp')
+  assert.equal(withImage.imageAlt, 'Monogram od hrasta')
+  assert.equal(withoutImage.image, '')
+})
+
+test('lista proizvoda prikazuje glavnu sliku ili oznaku da je nema', () => {
+  const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
+  client.setQueryData(['products'], productRows([
+    { ...seedProducts[0], id: 'p1', primaryImage: { url: 'https://img.example/m1.webp', alt: { bs: 'Monogram od hrasta' } } },
+    { ...seedProducts[0], id: 'p2', primaryImage: null },
+  ]))
+  const html = render(client, <ProductsPage />, '/products')
+  assert.match(html, /<img[^>]+src="https:\/\/img\.example\/m1\.webp"[^>]+alt="Monogram od hrasta"|<img[^>]+alt="Monogram od hrasta"[^>]+src="https:\/\/img\.example\/m1\.webp"/)
+  assert.match(html, /Nema glavne slike/)
+  assert.match(html, /aria-label="Uredi: Monogram za vjenčanje"/)
+  client.clear()
 })
 
 test('obrazac proizvoda prikazuje tok za prvi proizvod bez postojećih kategorija', async () => {

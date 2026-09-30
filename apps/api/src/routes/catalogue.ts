@@ -2,7 +2,7 @@ import { withImageUrls } from "./media.js";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
-import { asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { db } from "../db/client.js";
 import {
   categories,
@@ -18,9 +18,39 @@ export const catalogueRoutes: FastifyPluginAsync = async (app) => {
   app.get("/categories", async () =>
     db.select().from(categories).orderBy(categories.code),
   );
-  app.get("/products", async () =>
-    db.select().from(products).orderBy(desc(products.createdAt)),
-  );
+  app.get("/products", async () => {
+    const rows = await db
+      .select()
+      .from(products)
+      .orderBy(desc(products.createdAt));
+    const primaryImages = rows.length
+      ? await withImageUrls(
+          await db
+            .select()
+            .from(mediaAssets)
+            .where(
+              and(
+                inArray(
+                  mediaAssets.productId,
+                  rows.map((row) => row.id),
+                ),
+                eq(mediaAssets.isPrimary, true),
+              ),
+            ),
+        )
+      : [];
+    const imageByProduct = new Map(
+      primaryImages.map((image) => [image.productId, image]),
+    );
+    // The list only needs a thumbnail: the signed URL and alt text, never the storage key.
+    return rows.map((row) => {
+      const image = imageByProduct.get(row.id);
+      return {
+        ...row,
+        primaryImage: image ? { url: image.url, alt: image.alt } : null,
+      };
+    });
+  });
   const params = z.object({ id: z.string().uuid() });
   app.get("/products/:id", async (request, reply) => {
     const { id } = params.parse(request.params);
