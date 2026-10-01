@@ -57,11 +57,11 @@ In production:
 
 `render.yaml` is a Render Blueprint for two services:
 
-- **`lna-shop`** (Starter web service): the API and storefront in one instance, started by
-  `scripts/start-production.mjs`. The storefront serves the public port; the API listens on
-  `127.0.0.1:4000` and browsers reach it at `/backend` on the shop's own origin (a rewrite in
-  `apps/storefront/next.config.mjs`). Migrations run before each deploy; the health check
-  (`/backend/health`) only passes once both processes are up.
+- **`lna-shop`** (Starter web service): the API and storefront in one Node process on one port,
+  started by `scripts/start-production.mjs`. Requests under `/backend` go to the API (browsers and
+  the storefront's server both use it there); everything else goes to Next.js. A single port
+  matters because Render routes to whichever port it detects. Migrations run before each deploy;
+  the health check (`/backend/health`) only passes once both are ready.
 - **`lna-crm`** (free static site): the CRM build, calling the API at `<shop URL>/backend`.
 
 To deploy: in Render, **New → Blueprint**, pick this repository and fill in the prompted values:
@@ -79,11 +79,12 @@ Then in Supabase → Authentication → URL Configuration, set the Site URL to t
 `<CRM URL>/**` to the redirect URLs. Invite admins for production with
 `CRM_URL=<CRM URL> node --env-file=.env scripts/invite-admin.mjs EMAIL` from `apps/api`.
 
-Memory: in a Linux container limited to Starter's 512 MB and 0.5 CPU, the service used about
-135 MB idle and peaked near 300 MB under sustained page and image-resizing load; a 10 MB photo
-upload adds about 60 MB. Each process has a heap cap (`API_HEAP_MB`, `STOREFRONT_HEAP_MB`).
-If Render reports memory restarts, move the service to a larger instance or split the API
-into its own service (point `NEXT_PUBLIC_API_URL`/`API_URL` at it).
+Use Node 24 (`.node-version`): on Node 25+ the API's ESM dependencies load with far more memory.
+Memory: as two processes in a Linux container limited to Starter's 512 MB and 0.5 CPU, the
+service used about 135 MB idle and peaked near 300 MB under sustained page and image-resizing
+load; a 10 MB photo upload adds about 60 MB. The single-process server shares one runtime, so it
+uses less. If Render reports memory restarts, move the service to a larger instance or split the
+API into its own service (point `NEXT_PUBLIC_API_URL`/`API_URL` at it).
 
 Run the same service locally with `pnpm build:service` (with `NEXT_PUBLIC_API_URL=/backend`)
 and `pnpm start:production`.

@@ -1,4 +1,4 @@
-# Render Blueprint: one paid web service running the API + storefront together
+# Render Blueprint: one paid web service running the API + storefront in one process on one port
 # (scripts/start-production.mjs) and the CRM as a free static site.
 # Values marked `sync: false` are asked for when the Blueprint is first applied; see README → Deployment.
 services:
@@ -12,13 +12,14 @@ services:
     # Applies pending database migrations before each deploy goes live (needs no pnpm).
     preDeployCommand: cd apps/api && node --env-file-if-exists=.env dist/db/migrate.js
     startCommand: node scripts/start-production.mjs
-    # Passes through the storefront to the API, so it only succeeds when both are up.
+    # Answered by the API through the shared server, so it only succeeds once both are ready.
     healthCheckPath: /backend/health
     buildFilter:
       paths:
         - apps/api/**
         - apps/storefront/**
         - scripts/start-production.mjs
+        - .node-version
         - package.json
         - pnpm-lock.yaml
         - pnpm-workspace.yaml
@@ -28,11 +29,10 @@ services:
         value: "24"
       - key: NODE_ENV
         value: production
-      # The public (storefront) port. Set explicitly because the service also listens on the API's
-      # private port, and Render otherwise routes to whichever port it detects.
+      # The single port the combined server listens on.
       - key: PORT
         value: "10000"
-      # Browsers reach the API through the storefront's own origin (next.config.mjs rewrite).
+      # Browsers reach the API on the shop's own origin, under /backend.
       - key: NEXT_PUBLIC_API_URL
         value: /backend
       # Public shop address, used for canonical links and the sitemap, e.g. https://lna-shop.onrender.com
@@ -42,7 +42,7 @@ services:
       # The CRM's address, e.g. https://lna-crm.onrender.com (the shop itself needs no CORS entry).
       - key: CORS_ORIGINS
         sync: false
-      # One trusted hop: Render's proxy appends the visitor's IP, which the storefront passes on.
+      # One trusted hop: Render's proxy, which appends the visitor's IP.
       - key: TRUST_PROXY
         value: "1"
       - key: DATABASE_URL
