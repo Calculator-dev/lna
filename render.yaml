@@ -7,9 +7,10 @@ services:
     runtime: node
     plan: starter
     region: frankfurt
-    buildCommand: npm install -g pnpm@10.0.0 && pnpm install --frozen-lockfile --prod=false && pnpm build:service
-    # Applies pending database migrations before each deploy goes live.
-    preDeployCommand: pnpm --filter @lna/api db:migrate:prod
+    # pnpm runs through npx: Render's Node install is read-only, so `npm install -g` fails.
+    buildCommand: npx -y pnpm@10.0.0 install --frozen-lockfile --prod=false && npx -y pnpm@10.0.0 --filter @lna/api --filter @lna/storefront build
+    # Applies pending database migrations before each deploy goes live (needs no pnpm).
+    preDeployCommand: cd apps/api && node --env-file-if-exists=.env dist/db/migrate.js
     startCommand: node scripts/start-production.mjs
     # Passes through the storefront to the API, so it only succeeds when both are up.
     healthCheckPath: /backend/health
@@ -68,7 +69,7 @@ services:
   - type: web
     name: lna-crm
     runtime: static
-    buildCommand: npm install -g pnpm@10.0.0 && pnpm install --frozen-lockfile && pnpm --filter @lna/crm build
+    buildCommand: npx -y pnpm@10.0.0 install --frozen-lockfile && npx -y pnpm@10.0.0 --filter @lna/crm build
     staticPublishPath: apps/crm/dist
     buildFilter:
       paths:
