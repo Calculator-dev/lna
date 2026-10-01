@@ -38,7 +38,7 @@ function stop(code = 0) {
 process.on('SIGINT', () => stop())
 process.on('SIGTERM', () => stop())
 
-for (const app of apps) {
+function start(app) {
   const child = spawn(process.execPath, app.args, {
     cwd: `${root}${app.directory}`,
     stdio: 'inherit',
@@ -57,4 +57,29 @@ for (const app of apps) {
     }
   })
 }
-console.log(`Storefront on :${publicPort}, API on 127.0.0.1:${apiPort} (browsers reach it at /backend).`)
+
+// Start the storefront only once the API answers, so no page renders before its data source is up.
+async function waitForApi(timeoutMs = 60000) {
+  const deadline = Date.now() + timeoutMs
+  while (!stopping && Date.now() < deadline) {
+    try {
+      if ((await fetch(`http://127.0.0.1:${apiPort}/health`, { signal: AbortSignal.timeout(2000) })).ok) return true
+    } catch {
+      // Not listening yet.
+    }
+    await new Promise(resolve => setTimeout(resolve, 250))
+  }
+  return false
+}
+
+const [api, storefront] = apps
+start(api)
+if (await waitForApi()) {
+  if (!stopping) {
+    start(storefront)
+    console.log(`Storefront on :${publicPort}, API on 127.0.0.1:${apiPort} (browsers reach it at /backend).`)
+  }
+} else if (!stopping) {
+  console.error(`API did not answer on 127.0.0.1:${apiPort} within 60s. Stopping the service.`)
+  stop(1)
+}
