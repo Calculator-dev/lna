@@ -28,6 +28,10 @@ services:
         value: "24"
       - key: NODE_ENV
         value: production
+      # The public (storefront) port. Set explicitly because the service also listens on the API's
+      # private port, and Render otherwise routes to whichever port it detects.
+      - key: PORT
+        value: "10000"
       # Browsers reach the API through the storefront's own origin (next.config.mjs rewrite).
       - key: NEXT_PUBLIC_API_URL
         value: /backend
