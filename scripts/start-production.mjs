@@ -9,7 +9,16 @@ import { fileURLToPath } from 'node:url'
 const root = fileURLToPath(new URL('../', import.meta.url))
 const publicPort = process.env.PORT || '3001'
 const apiPort = process.env.API_INTERNAL_PORT || '4000'
-if (publicPort === apiPort) throw new Error('PORT and API_INTERNAL_PORT must differ')
+for (const [name, value] of [['PORT', publicPort], ['API_INTERNAL_PORT', apiPort]]) {
+  if (!/^\d+$/.test(value) || Number(value) < 1 || Number(value) > 65535) {
+    console.error(`${name} must be a port number between 1 and 65535 (got "${value}").`)
+    process.exit(1)
+  }
+}
+if (publicPort === apiPort) {
+  console.error('PORT and API_INTERNAL_PORT must differ.')
+  process.exit(1)
+}
 
 // Keep each heap well under the instance's memory so both processes fit (override per service).
 const heap = (name, fallback) => `--max-old-space-size=${process.env[name] || fallback}`
