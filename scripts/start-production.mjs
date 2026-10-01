@@ -3,6 +3,7 @@
 // reached by the storefront's server directly and by browsers through the storefront's
 // /backend rewrite (see apps/storefront/next.config.mjs). Build first with `pnpm build:service`.
 import { spawn } from 'node:child_process'
+import { connect } from 'node:net'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
@@ -58,28 +59,39 @@ function start(app) {
   })
 }
 
-// Start the storefront only once the API answers, so no page renders before its data source is up.
-async function waitForApi(timeoutMs = 60000) {
+// Is something accepting connections on this port yet?
+function listening(port) {
+  return new Promise(resolve => {
+    const socket = connect({ host: '127.0.0.1', port })
+    socket.once('connect', () => { socket.destroy(); resolve(true) })
+    socket.once('error', () => resolve(false))
+  })
+}
+async function waitFor(check, timeoutMs = 60000) {
   const deadline = Date.now() + timeoutMs
   while (!stopping && Date.now() < deadline) {
-    try {
-      if ((await fetch(`http://127.0.0.1:${apiPort}/health`, { signal: AbortSignal.timeout(2000) })).ok) return true
-    } catch {
-      // Not listening yet.
-    }
+    if (await check()) return true
     await new Promise(resolve => setTimeout(resolve, 250))
   }
   return false
 }
-
-const [api, storefront] = apps
-start(api)
-if (await waitForApi()) {
-  if (!stopping) {
-    start(storefront)
-    console.log(`Storefront on :${publicPort}, API on 127.0.0.1:${apiPort} (browsers reach it at /backend).`)
+async function apiHealthy() {
+  try {
+    return (await fetch(`http://127.0.0.1:${apiPort}/health`, { signal: AbortSignal.timeout(2000) })).ok
+  } catch {
+    return false
   }
+}
+
+// The public port must open first: Render detects the service's port by scanning for the first
+// open one, and would otherwise pick the API's private port. Visitors are not affected by the API
+// starting a moment later, because the health check (/backend/health) needs both processes.
+const [api, storefront] = apps
+start(storefront)
+if (!(await waitFor(() => listening(Number(publicPort))))) {
+  if (!stopping) { console.error(`Storefront did not open port ${publicPort} within 60s. Stopping the service.`); stop(1) }
 } else if (!stopping) {
-  console.error(`API did not answer on 127.0.0.1:${apiPort} within 60s. Stopping the service.`)
-  stop(1)
+  start(api)
+  if (await waitFor(apiHealthy)) console.log(`Storefront on :${publicPort}, API on 127.0.0.1:${apiPort} (browsers reach it at /backend).`)
+  else if (!stopping) { console.error(`API did not answer on 127.0.0.1:${apiPort} within 60s. Stopping the service.`); stop(1) }
 }
