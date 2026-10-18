@@ -15,6 +15,13 @@
       "when": 1792360181852,
       "tag": "0001_order_snapshots",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792361455212,
+      "tag": "0002_require_order_snapshots",
+      "breakpoints": true
     }
   ]
 }

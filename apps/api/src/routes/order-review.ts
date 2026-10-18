@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from "fastify"
 import { and, desc, eq, sql } from "drizzle-orm"
 import { z } from "zod"
 import { db } from "../db/client.js"
-import { customers, orderItems, orders, products } from "../db/schema.js"
+import { customers, orderItems, orders } from "../db/schema.js"
 import { sendOrderDecisionEmail } from "../services/order-email.js"
 
 const params = z.object({ id: z.string().uuid() })
@@ -47,28 +47,19 @@ export const orderReviewRoutes: FastifyPluginAsync = async app => {
       .limit(1)
     if (!order) return reply.code(404).send({ message: "Order not found" })
 
+    // Lines are read from their own snapshot, never from the current catalogue.
     const items = await db
       .select({
         id: orderItems.id, productId: orderItems.productId, variantId: orderItems.variantId,
-        sku: orderItems.sku, productName: orderItems.productName, dimensions: orderItems.dimensions,
+        sku: orderItems.sku, name: orderItems.productName, dimensions: orderItems.dimensions,
         quantity: orderItems.quantity, unitPrice: orderItems.unitPrice, personalization: orderItems.personalization,
-        productSku: products.sku, translations: products.translations,
       })
       .from(orderItems)
-      .innerJoin(products, eq(products.id, orderItems.productId))
       .where(eq(orderItems.orderId, id))
 
     return {
       ...order,
-      // Lines show what was ordered. The catalogue is only a fallback for lines written by the
-      // previous release while this one was deploying.
-      items: items.map(item => ({
-        id: item.id, productId: item.productId, variantId: item.variantId,
-        sku: item.sku ?? item.productSku,
-        name: item.productName ?? item.translations[order.locale]?.name ?? item.translations.bs?.name ?? item.productSku,
-        dimensions: item.dimensions,
-        quantity: item.quantity, unitPrice: item.unitPrice, personalization: item.personalization,
-      })),
+      items,
       subtotal: items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
       amount: items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) + order.shippingAmount,
     }
