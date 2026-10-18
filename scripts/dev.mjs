@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process'
+import { randomBytes } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 
 if (Number(process.versions.node.split('.')[0]) < 22) {
@@ -12,6 +13,11 @@ const apps = [
   { name: 'CRM', directory: 'apps/crm', args: ['node_modules/vite/bin/vite.js', '--port', '3000', '--strictPort'] },
   { name: 'Storefront', directory: 'apps/storefront', args: ['node_modules/next/dist/bin/next', 'dev', '--port', '3001'] },
 ]
+// Lets the API expire the storefront's cached catalogue after CRM saves (see start-production.mjs).
+const revalidation = {
+  STOREFRONT_REVALIDATE_URL: 'http://localhost:3001/api/revalidate',
+  REVALIDATE_SECRET: process.env.REVALIDATE_SECRET || randomBytes(32).toString('hex'),
+}
 const children = []
 let stopping = false
 function stop(code = 0) {
@@ -34,6 +40,7 @@ console.log('Starting API (:4000), CRM (:3000), and storefront (:3001). Press Ct
 for (const app of apps) {
   const child = spawn(process.execPath, app.args, {
     cwd: `${root}${app.directory}`,
+    env: { ...process.env, ...revalidation },
     stdio: 'inherit',
     detached: process.platform !== 'win32',
   })

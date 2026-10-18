@@ -2,6 +2,7 @@
 // Requests under /backend go to the API (with the prefix removed); everything else goes to the
 // Next.js storefront. Serving a single port matters on Render, which routes to whichever port
 // it detects. Build first with `pnpm build:service` (with NEXT_PUBLIC_API_URL=/backend).
+import { randomBytes } from 'node:crypto'
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
@@ -16,6 +17,10 @@ const prefix = '/backend'
 process.env.NODE_ENV ||= 'production'
 // The storefront's server-side requests (catalogue, images) loop back through this same port.
 process.env.API_URL = `http://127.0.0.1:${port}${prefix}`
+// After CRM saves, the API tells the storefront (in this same process) to drop its cached
+// catalogue. A secret made at startup is enough, since nothing outside the process needs it.
+process.env.STOREFRONT_REVALIDATE_URL = `http://127.0.0.1:${port}/api/revalidate`
+process.env.REVALIDATE_SECRET ||= randomBytes(32).toString('hex')
 
 // The API validates its environment on import, so a misconfiguration stops startup here.
 const { createApp } = await import('../apps/api/dist/app.js')

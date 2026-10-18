@@ -50,6 +50,11 @@ In production:
   of proxy hops) so rate limits apply per client rather than per proxy.
 - The storefront requires `API_URL` and `NEXT_PUBLIC_API_URL`; they only default
   to `http://localhost:4000` in development.
+- The storefront caches the catalogue and the API expires that cache after every CRM
+  product save, through the storefront's `POST /api/revalidate`. `pnpm dev` and
+  `scripts/start-production.mjs` configure this themselves (`STOREFRONT_REVALIDATE_URL`
+  and `REVALIDATE_SECRET` on both apps); only a setup that runs the apps some other way
+  needs to set them. Without them, changes still appear within five minutes.
 - The CRM is a single-page app: configure the host to serve `index.html` for all
   paths (for example `/orders/<id>`).
 

@@ -6,11 +6,16 @@ import { activeVariants, defaultShippingPolicy, localizeCategory, localizeProduc
 
 type Catalogue = { products: Product[]; categories: Category[]; shipping: ShippingPolicy }
 
+/** Cache tag of the catalogue; the API expires it after every CRM product save (app/api/revalidate). */
+export const CATALOGUE_TAG = "catalogue"
+
 // cache() deduplicates the fetch within one request (metadata, page, related products).
 export const getCatalogue = cache(async (): Promise<Catalogue> => {
-  // The catalogue is always read at request time so CRM changes appear immediately.
+  // Pages render at request time (the API isn't reachable during the build), but they share one
+  // cached copy of the catalogue instead of querying the database on every view. CRM saves expire
+  // it at once; the time limit only bounds staleness if that notification is missed.
   await connection()
-  const response = await fetch(`${serverApiUrl()}/public/catalogue`, { cache: "no-store", signal: AbortSignal.timeout(10000) })
+  const response = await fetch(`${serverApiUrl()}/public/catalogue`, { next: { revalidate: 300, tags: [CATALOGUE_TAG] }, signal: AbortSignal.timeout(10000) })
   if (!response.ok) throw new Error("The product catalogue is temporarily unavailable")
   const data = await response.json() as Catalogue
   return { ...data, shipping: data.shipping ?? defaultShippingPolicy, products: data.products.map(product => ({ ...product, media: product.media.map(image => ({ ...image, url: `/api/media/${image.id}` })) })) }
