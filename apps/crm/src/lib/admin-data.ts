@@ -144,6 +144,7 @@ export type AdminOrderDetail = {
   notes: string | null;
   declineReason: string | null;
   reviewedAt: string | null;
+  reviewedByEmail: string | null;
   reviewEmailSentAt: string | null;
   confirmationEmailSentAt: string | null;
   createdAt: string;
@@ -153,8 +154,10 @@ export type AdminOrderDetail = {
   items: Array<{
     id: string;
     productId: string;
+    variantId: string | null;
     sku: string;
     name: string;
+    dimensions: string | null;
     quantity: number;
     unitPrice: number;
     personalization: string | null;

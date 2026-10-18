@@ -58,3 +58,36 @@ test('order decisions require a decline reason and persist accepted or declined 
     await pool.end()
   }
 })
+
+test('a decision is still reported as saved when its email timestamp cannot be stored', async () => {
+  const { env } = await import('../dist/env.js')
+  Object.assign(env, { RESEND_API_KEY: 'test-key', ORDER_EMAIL_FROM: 'shop@example.com' })
+  const app = Fastify()
+  await app.register(sensible)
+  app.decorateRequest('adminUser', null)
+  app.addHook('preHandler', async request => { request.adminUser = { id: 'b8a4d1f2-5c3e-4a8f-9d2b-7e6f1a0c3b5d', email: 'admin@example.com' } })
+  await app.register(orderReviewRoutes)
+  const originalSelect = db.select
+  const originalUpdate = db.update
+  const originalFetch = globalThis.fetch
+  let saved
+  db.select = () => ({ from: () => ({ innerJoin: () => ({ where: () => ({ limit: async () => [{ ...existing }] }) }) }) })
+  db.update = () => ({ set: values => ({ where: () => ({
+    returning: async () => { saved = values; return [{ ...existing, ...values }] },
+    then: (_resolve, reject) => reject(new Error('Simulated database failure')),
+  }) }) })
+  globalThis.fetch = async () => new Response('{}', { status: 200 })
+  try {
+    const response = await app.inject({ method: 'PUT', url: `/orders/${orderId}/decision`, payload: { decision: 'accept' } })
+    assert.equal(response.statusCode, 200)
+    assert.deepEqual(response.json().notification, { sent: true })
+    assert.equal(saved.reviewedBy, 'b8a4d1f2-5c3e-4a8f-9d2b-7e6f1a0c3b5d')
+    assert.equal(saved.reviewedByEmail, 'admin@example.com')
+  } finally {
+    db.select = originalSelect
+    db.update = originalUpdate
+    globalThis.fetch = originalFetch
+    Object.assign(env, { RESEND_API_KEY: undefined, ORDER_EMAIL_FROM: undefined })
+    await app.close()
+  }
+})

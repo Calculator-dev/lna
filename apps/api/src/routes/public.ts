@@ -102,7 +102,29 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
     }
   })
 
+  // Optional header: a retried checkout with the same key gets the original order back
+  // instead of creating a duplicate (double clicks, lost responses).
+  const idempotencyKeySchema = z.string().regex(/^[A-Za-z0-9_-]{16,80}$/).optional()
+
+  const receipt = (order: typeof orders.$inferSelect, subtotal: number) => ({
+    ok: true,
+    orderNumber: order.orderNumber,
+    status: order.status,
+    subtotal,
+    shippingAmount: order.shippingAmount,
+    total: subtotal + order.shippingAmount,
+    message: "Manual confirmation pending",
+  })
+  // The receipt of an order already placed with this key. No email is sent again.
+  async function replayedReceipt(idempotencyKey: string) {
+    const [order] = await db.select().from(orders).where(eq(orders.idempotencyKey, idempotencyKey)).limit(1)
+    if (!order) return undefined
+    const items = await db.select({ unitPrice: orderItems.unitPrice, quantity: orderItems.quantity }).from(orderItems).where(eq(orderItems.orderId, order.id))
+    return { ...receipt(order, items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)), replayed: true }
+  }
+
   app.post("/orders", { config: { rateLimit: publicFormRateLimit } }, async (request, reply) => {
+    const idempotencyKey = idempotencyKeySchema.parse(request.headers["idempotency-key"])
     // Limits mirror the database column sizes so oversized input is a 400, not a 500.
     const payload = z.object({
       locale: localeSchema,
@@ -128,8 +150,13 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
       ).min(1).max(100),
     }).parse(request.body)
 
+    if (idempotencyKey) {
+      const replay = await replayedReceipt(idempotencyKey)
+      if (replay) return reply.code(200).send(replay)
+    }
+
     const orderNumber = createOrderNumber()
-    const result = await db.transaction(async (tx) => {
+    const placeOrder = () => db.transaction(async (tx) => {
       const selected = await tx.select().from(products).where(inArray(products.id, payload.items.map((item) => item.productId))).for("share")
       const byId = new Map(selected.map((product) => [product.id, product]))
       const variantIds = payload.items.flatMap(item => item.variantId ? [item.variantId] : [])
@@ -146,14 +173,12 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
           if (!variant || variant.productId !== product.id) throw app.httpErrors.badRequest("Unknown product variant")
           if (!variant.active) throw app.httpErrors.badRequest("Selected variant is no longer available")
         }
-        const variantNote = variant && (variant.sku !== product.sku || variant.dimensions !== product.dimensions)
-          ? `Variant: ${variant.sku} · ${variant.dimensions}`
-          : ""
         return {
           item,
           product,
+          variant,
+          name: product.translations[payload.locale]?.name ?? product.translations.bs?.name ?? product.sku,
           unitPrice: variant?.price ?? product.price,
-          personalization: [item.personalization, variantNote].filter(Boolean).join("\n") || undefined,
         }
       })
       const subtotal = lines.reduce((sum, line) => sum + line.unitPrice * line.item.quantity, 0)
@@ -161,23 +186,34 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
       const [customer] = await tx.insert(customers).values(payload.customer).returning()
       const [order] = await tx.insert(orders).values({
         orderNumber, locale: payload.locale, customerId: customer.id,
-        shippingAddress: payload.shipping, notes: payload.notes, shippingAmount,
+        shippingAddress: payload.shipping, notes: payload.notes, shippingAmount, idempotencyKey,
       }).returning()
       await tx.insert(orderItems).values(lines.map(line => ({
-        orderId: order.id, productId: line.item.productId, quantity: line.item.quantity,
-        unitPrice: line.unitPrice, personalization: line.personalization,
+        orderId: order.id, productId: line.item.productId, variantId: line.variant?.id,
+        sku: line.variant?.sku ?? line.product.sku, productName: line.name,
+        dimensions: line.variant?.dimensions ?? line.product.dimensions,
+        quantity: line.item.quantity, unitPrice: line.unitPrice, personalization: line.item.personalization,
       })))
       return {
         order,
         subtotal,
         shippingAmount,
-        emailItems: lines.map(line => ({
-          name: line.product.translations[payload.locale]?.name ?? line.product.translations.bs?.name ?? line.product.sku,
-          quantity: line.item.quantity,
-          unitPrice: line.unitPrice,
-        })),
+        emailItems: lines.map(line => ({ name: line.name, quantity: line.item.quantity, unitPrice: line.unitPrice })),
       }
     })
+
+    let result: Awaited<ReturnType<typeof placeOrder>>
+    try {
+      result = await placeOrder()
+    } catch (error) {
+      // A concurrent request with the same key won the race: answer with its order.
+      const failure = error as { constraint?: string; cause?: { constraint?: string } }
+      if (idempotencyKey && (failure.cause?.constraint ?? failure.constraint) === "orders_idempotency_key_unique") {
+        const replay = await replayedReceipt(idempotencyKey)
+        if (replay) return reply.code(200).send(replay)
+      }
+      throw error
+    }
     const notification = await sendOrderConfirmationEmail({
       to: payload.customer.email,
       fullName: payload.customer.fullName,
@@ -194,15 +230,6 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
         request.log.warn({ orderId: result.order.id }, "Order confirmation sent but timestamp could not be saved")
       }
     }
-    return reply.code(201).send({
-      ok: true,
-      orderNumber: result.order.orderNumber,
-      status: result.order.status,
-      subtotal: result.subtotal,
-      shippingAmount: result.shippingAmount,
-      total: result.subtotal + result.shippingAmount,
-      message: "Manual confirmation pending",
-      notification,
-    })
+    return reply.code(201).send({ ...receipt(result.order, result.subtotal), notification })
   })
 }

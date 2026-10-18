@@ -71,7 +71,7 @@ export function OrderDetails({ id, onBack }: { id: string; onBack: () => void })
             <table className="w-full min-w-140 text-left text-sm">
               <thead className="text-muted-foreground"><tr><th className="pb-3 font-medium">Proizvod</th><th className="pb-3 font-medium">Količina</th><th className="pb-3 text-right font-medium">Cijena</th><th className="pb-3 text-right font-medium">Ukupno</th></tr></thead>
               <tbody>{order.items.map(item => <tr key={item.id} className="border-t border-border">
-                <td className="py-4"><p className="font-medium">{item.name}</p><p className="mt-1 text-xs text-muted-foreground">{item.sku}</p>{item.personalization && <p className="mt-2 text-xs">Personalizacija: {item.personalization}</p>}</td>
+                <td className="py-4"><p className="font-medium">{item.name}</p><p className="mt-1 text-xs text-muted-foreground">{[item.sku, item.dimensions].filter(Boolean).join(" · ")}</p>{item.personalization && <p className="mt-2 text-xs">Personalizacija: {item.personalization}</p>}</td>
                 <td className="py-4">{item.quantity}</td><td className="py-4 text-right">{money(item.unitPrice)}</td><td className="py-4 text-right font-medium">{money(item.unitPrice * item.quantity)}</td>
               </tr>)}</tbody>
             </table>
@@ -109,7 +109,7 @@ export function OrderDetails({ id, onBack }: { id: string; onBack: () => void })
         </form>}
       </Card>}
 
-      {!canReview && <Card className="p-6"><h3 className="font-serif text-2xl">Odluka je zaključena</h3><p className="mt-2 text-sm text-muted-foreground">Narudžba je {localizedOrderStatus(order.status).toLowerCase()} {order.reviewedAt ? `dana ${date(order.reviewedAt)}` : ""}.</p>{order.declineReason && <div className="mt-5 border-l-2 border-red-300 pl-4"><p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Obrazloženje odbijanja</p><p className="mt-2 text-sm leading-6">{order.declineReason}</p></div>}<p className="mt-4 text-xs text-muted-foreground">{order.reviewEmailSentAt ? `Email poslan ${date(order.reviewEmailSentAt)}.` : "Email kupcu nije zabilježen kao poslan."}</p></Card>}
+      {!canReview && <Card className="p-6"><h3 className="font-serif text-2xl">Odluka je zaključena</h3><p className="mt-2 text-sm text-muted-foreground">Narudžba je {localizedOrderStatus(order.status).toLowerCase()} {order.reviewedAt ? `dana ${date(order.reviewedAt)}` : ""}{order.reviewedByEmail ? ` (${order.reviewedByEmail})` : ""}.</p>{order.declineReason && <div className="mt-5 border-l-2 border-red-300 pl-4"><p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Obrazloženje odbijanja</p><p className="mt-2 text-sm leading-6">{order.declineReason}</p></div>}<p className="mt-4 text-xs text-muted-foreground">{order.reviewEmailSentAt ? `Email poslan ${date(order.reviewEmailSentAt)}.` : "Email kupcu nije zabilježen kao poslan."}</p></Card>}
     </div>
   )
 }

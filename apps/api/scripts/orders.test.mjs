@@ -31,7 +31,12 @@ test('orders use database prices, reject missing products, and report storage fa
   try {
     const response = await app.inject({ method: 'POST', url: '/public/orders', payload })
     assert.equal(response.statusCode, 201)
-    assert.equal(inserts.find(entry => entry.table === orderItems).values[0].unitPrice, 45)
+    const line = inserts.find(entry => entry.table === orderItems).values[0]
+    assert.equal(line.unitPrice, 45)
+    // Lines keep their own copy of what was ordered, in the order's language.
+    assert.equal(line.sku, 'TEST-1')
+    assert.equal(line.productName, 'Test product')
+    assert.equal(line.dimensions, '20 cm')
     // 2 × 45 = 90 KM is below the free-delivery threshold.
     assert.equal(inserts.find(entry => entry.table === orders).values.shippingAmount, 10)
     assert.equal(response.json().subtotal, 90)
@@ -68,6 +73,66 @@ test('orders use database prices, reject missing products, and report storage fa
     assert.equal(failed.json().message, 'Internal server error')
   } finally {
     db.transaction = original
+    await app.close()
+  }
+})
+
+test('a retried order with the same idempotency key returns the original order without placing another', async () => {
+  const app = createApp()
+  const originalTransaction = db.transaction
+  const originalSelect = db.select
+  const product = { id: productId, sku: 'TEST-1', price: 45, dimensions: '20 cm', customizable: false, translations: { bs: { name: 'Test proizvod' } } }
+  const placed = { id: 'order-id', orderNumber: 'LNA-260101-ABCDEF12', status: 'submitted', shippingAmount: 10 }
+  let stored = []
+  let transactions = 0
+  let raceLost = false
+  db.select = () => ({ from: table => ({ where: () => table === orders
+    ? { limit: async () => stored }
+    : Promise.resolve([{ unitPrice: 45, quantity: 2 }]) }) })
+  db.transaction = async callback => {
+    transactions++
+    if (raceLost) {
+      stored = [placed]
+      throw Object.assign(new Error('duplicate key'), { cause: { code: '23505', constraint: 'orders_idempotency_key_unique' } })
+    }
+    return callback({
+      select: () => ({ from: () => ({ where: () => ({ for: async () => [product] }) }) }),
+      insert: table => ({ values: values => {
+        if (table === customers) return { returning: async () => [{ id: 'customer-id' }] }
+        if (table === orders) {
+          assert.equal(values.idempotencyKey, 'checkout-key-0001')
+          return { returning: async () => [{ ...placed, ...values, orderNumber: placed.orderNumber }] }
+        }
+        return Promise.resolve()
+      } }),
+    })
+  }
+  const headers = { 'idempotency-key': 'checkout-key-0001' }
+  try {
+    const first = await app.inject({ method: 'POST', url: '/public/orders', payload, headers })
+    assert.equal(first.statusCode, 201)
+    assert.equal(transactions, 1)
+
+    stored = [placed]
+    const retried = await app.inject({ method: 'POST', url: '/public/orders', payload, headers })
+    assert.equal(retried.statusCode, 200)
+    assert.equal(transactions, 1)
+    assert.equal(retried.json().orderNumber, placed.orderNumber)
+    assert.equal(retried.json().total, 100)
+    assert.equal(retried.json().replayed, true)
+
+    // Two requests with one key at the same time: the loser answers with the winner's order.
+    stored = []
+    raceLost = true
+    const concurrent = await app.inject({ method: 'POST', url: '/public/orders', payload, headers })
+    assert.equal(concurrent.statusCode, 200)
+    assert.equal(concurrent.json().orderNumber, placed.orderNumber)
+
+    const malformed = await app.inject({ method: 'POST', url: '/public/orders', payload, headers: { 'idempotency-key': 'short' } })
+    assert.equal(malformed.statusCode, 400)
+  } finally {
+    db.transaction = originalTransaction
+    db.select = originalSelect
     await app.close()
   }
 })
