@@ -9,6 +9,9 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { routes } from '../src/app.tsx'
 import { ProductsPage } from '../src/pages/products.tsx'
 
+// Cache entry of a paged admin list (usePagedList) holding one loaded page.
+const onePage = <T,>(items: T[], nextCursor: string | null = null) => ({ pages: [{ items, nextCursor }], pageParams: [undefined] })
+
 function render(client: QueryClient, element: React.ReactElement | null, path = '/') {
   const router = createMemoryRouter(element ? [{ path: '*', element }] : routes, { initialEntries: [path] })
   return renderToString(<QueryClientProvider client={client}><RouterProvider router={router} /></QueryClientProvider>)
@@ -20,8 +23,8 @@ test('API odgovor kontrolne ploče prikazuje se bez greške', () => {
   assert.equal(data.totals[0].value, '4')
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
   client.setQueryData(['dashboard'], data)
-  client.setQueryData(['products'], productRows(seedProducts))
-  client.setQueryData(['orders'], orderRows(seedDashboard.recentOrders))
+  client.setQueryData(['products'], onePage(productRows(seedProducts)))
+  client.setQueryData(['orders'], onePage(orderRows(seedDashboard.recentOrders)))
   const html = render(client, null)
   assert.match(html, /Današnje narudžbe/)
   assert.match(html, /LNA-104251/)
@@ -45,10 +48,10 @@ test('API proizvodi se mapiraju u lokalizovane ćelije tabele', () => {
 
 test('lista proizvoda prikazuje glavnu sliku ili oznaku da je nema', () => {
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
-  client.setQueryData(['products'], productRows([
+  client.setQueryData(['products'], onePage(productRows([
     { ...seedProducts[0], id: 'p1', primaryImage: { url: 'https://img.example/m1.webp', alt: { bs: 'Monogram od hrasta' } } },
     { ...seedProducts[0], id: 'p2', primaryImage: null },
-  ]))
+  ])))
   const html = render(client, <ProductsPage />, '/products')
   assert.match(html, /<img[^>]+src="https:\/\/img\.example\/m1\.webp"[^>]+alt="Monogram od hrasta"|<img[^>]+alt="Monogram od hrasta"[^>]+src="https:\/\/img\.example\/m1\.webp"/)
   assert.match(html, /Nema glavne slike/)
@@ -100,8 +103,14 @@ test('sačuvane slike proizvoda prikazuju pregled, opise i kontrole glavne slike
 test('liste proizvoda, narudžbi i upita imaju stanja učitavanja i prazne liste', () => {
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
   assert.match(render(client, null, '/orders'), /Učitavanje…/)
-  client.setQueryData(['inquiries'], [])
+  client.setQueryData(['inquiries'], onePage([]))
   assert.match(render(client, null, '/inquiries'), /Još nema upita/)
+  assert.doesNotMatch(render(client, null, '/inquiries'), /Učitaj još/)
+  // A page with a cursor after it offers the next one.
+  client.setQueryData(['orders'], onePage(orderRows(seedDashboard.recentOrders), 'next-cursor'))
+  const orders = render(client, null, '/orders')
+  assert.match(orders, /LNA-104251/)
+  assert.match(orders, /Učitaj još/)
   assert.match(render(client, null, '/ne-postoji'), /Stranica nije pronađena/)
   client.clear()
 })

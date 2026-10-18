@@ -4,6 +4,7 @@ import { z } from "zod"
 import { db } from "../db/client.js"
 import { customers, orderItems, orders } from "../db/schema.js"
 import { sendOrderDecisionEmail } from "../services/order-email.js"
+import { beforeCursor, cursorTime, page, pageQuery } from "../lib/pagination.js"
 
 const params = z.object({ id: z.string().uuid() })
 const decisionInput = z.discriminatedUnion("decision", [
@@ -12,21 +13,28 @@ const decisionInput = z.discriminatedUnion("decision", [
 ])
 const totalAmount = sql<number>`coalesce(sum(${orderItems.unitPrice} * ${orderItems.quantity}), 0) + ${orders.shippingAmount}`.mapWith(Number)
 
-export function orderSummaries() {
+/** Newest first; `before` is a page cursor from a previous page. */
+export function orderSummaries(before?: string) {
   return db
     .select({
       id: orders.id, orderNumber: orders.orderNumber, customer: customers.fullName,
       status: orders.status, amount: totalAmount, createdAt: orders.createdAt,
+      cursorTime: cursorTime(orders.createdAt),
     })
     .from(orders)
     .innerJoin(customers, eq(customers.id, orders.customerId))
     .leftJoin(orderItems, eq(orderItems.orderId, orders.id))
+    .where(before ? beforeCursor(orders.createdAt, orders.id, before) : undefined)
     .groupBy(orders.id, customers.id)
-    .orderBy(desc(orders.createdAt))
+    .orderBy(desc(orders.createdAt), desc(orders.id))
 }
 
 export const orderReviewRoutes: FastifyPluginAsync = async app => {
-  app.get("/orders", async () => orderSummaries())
+  app.get("/orders", async (request, reply) => {
+    const { limit, before } = pageQuery.parse(request.query)
+    const query = orderSummaries(before)
+    return page(reply, await (limit ? query.limit(limit + 1) : query), limit)
+  })
 
   app.get("/orders/:id", async (request, reply) => {
     const { id } = params.parse(request.params)

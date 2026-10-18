@@ -2,7 +2,7 @@ import { withImageUrls } from "./media.js";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, inArray } from "drizzle-orm";
 import { db } from "../db/client.js";
 import {
   categories,
@@ -13,17 +13,21 @@ import {
 import { productInput, slugFor } from "../lib/product-input.js";
 import { publicVariants } from "../lib/variants.js";
 import { revalidateStorefrontCatalogue } from "../services/storefront.js";
+import { beforeCursor, cursorTime, page, pageQuery } from "../lib/pagination.js";
 
 // Registered inside the authenticated admin route scope.
 export const catalogueRoutes: FastifyPluginAsync = async (app) => {
   app.get("/categories", async () =>
     db.select().from(categories).orderBy(categories.code),
   );
-  app.get("/products", async () => {
-    const rows = await db
-      .select()
+  app.get("/products", async (request, reply) => {
+    const { limit, before } = pageQuery.parse(request.query);
+    const query = db
+      .select({ ...getTableColumns(products), cursorTime: cursorTime(products.createdAt) })
       .from(products)
-      .orderBy(desc(products.createdAt));
+      .where(before ? beforeCursor(products.createdAt, products.id, before) : undefined)
+      .orderBy(desc(products.createdAt), desc(products.id));
+    const rows = page(reply, await (limit ? query.limit(limit + 1) : query), limit);
     const primaryImages = rows.length
       ? await withImageUrls(
           await db

@@ -1,12 +1,12 @@
-import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router"
 import { DataTable } from "../components/data-table"
 import { InquiryDetails } from "../components/inquiry-details"
 import { PageHeader } from "../components/page-header"
 import { getInquiries } from "../lib/api"
+import { usePagedList } from "../lib/use-paged-list"
 
 export function InquiriesPage() {
-  const query = useQuery({ queryKey: ["inquiries"], queryFn: getInquiries })
+  const query = usePagedList("inquiries", getInquiries)
   return (
     <>
       <PageHeader eyebrow="Prodaja" title="Upiti za izradu po mjeri" description="Zahtjevi za personalizirane proizvode poslani putem webshopa." />

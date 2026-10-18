@@ -1,4 +1,4 @@
-import { dashboardView, inquiryRows, orderRows, productRows, type AdminDashboard, type AdminInquiry, type AdminInquiryDetail, type AdminOrder, type AdminOrderDetail, type AdminProduct, type OrderDecisionResult, type ProductDetails } from "./admin-data"
+import { dashboardView, inquiryRows, orderRows, productRows, type AdminDashboard, type AdminInquiryDetail, type AdminOrderDetail, type AdminProduct, type OrderDecisionResult, type ProductDetails } from "./admin-data"
 import { apiUrl as API_URL, supabase } from "./auth"
 
 export class ApiError extends Error {
@@ -8,6 +8,10 @@ export class ApiError extends Error {
 }
 
 async function fetchJson<T>(path: string, options?: { method: "POST" | "PUT"; body: unknown }): Promise<T> {
+  return (await request(path, options)).json() as Promise<T>
+}
+
+async function request(path: string, options?: { method: "POST" | "PUT"; body: unknown }): Promise<Response> {
   if (!API_URL || !supabase) throw new Error("Administratorski servis nije konfigurisan")
   const { data, error } = await supabase.auth.getSession()
   if (error || !data.session) throw new Error("Potrebna je prijava")
@@ -28,19 +32,30 @@ async function fetchJson<T>(path: string, options?: { method: "POST" | "PUT"; bo
     throw new ApiError(`${body?.message ?? "Zahtjev nije uspio"}${fields}`, response.status)
   }
 
-  return response.json() as Promise<T>
+  return response
+}
+
+/** One page of an admin list, newest first; pass `nextCursor` back to get the next one. */
+export type Page<T> = { items: T[]; nextCursor: string | null }
+export const PAGE_SIZE = 50
+
+async function fetchPage<T, R>(path: string, toRows: (items: T[]) => R[], before?: string): Promise<Page<R>> {
+  const params = new URLSearchParams({ limit: String(PAGE_SIZE) })
+  if (before) params.set("before", before)
+  const response = await request(`${path}?${params}`)
+  return { items: toRows(await response.json() as T[]), nextCursor: response.headers.get("X-Next-Cursor") }
 }
 
 export function getDashboard() {
   return fetchJson<AdminDashboard>("/admin/dashboard").then(dashboardView)
 }
 
-export function getProducts() {
-  return fetchJson<AdminProduct[]>("/admin/products").then(productRows)
+export function getProducts(before?: string) {
+  return fetchPage("/admin/products", productRows, before)
 }
 
-export function getOrders() {
-  return fetchJson<AdminOrder[]>("/admin/orders").then(orderRows)
+export function getOrders(before?: string) {
+  return fetchPage("/admin/orders", orderRows, before)
 }
 
 export function getOrder(id: string) {
@@ -51,8 +66,8 @@ export function decideOrder(id: string, body: { decision: "accept" } | { decisio
   return fetchJson<OrderDecisionResult>(`/admin/orders/${encodeURIComponent(id)}/decision`, { method: "PUT", body })
 }
 
-export function getInquiries() {
-  return fetchJson<AdminInquiry[]>("/admin/inquiries").then(inquiryRows)
+export function getInquiries(before?: string) {
+  return fetchPage("/admin/inquiries", inquiryRows, before)
 }
 
 export function getInquiry(id: string) {

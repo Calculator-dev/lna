@@ -7,6 +7,7 @@ import sensible from "@fastify/sensible"
 import Fastify from "fastify"
 import { publicRoutes } from "./routes/public.js"
 import { adminRoutes } from "./routes/admin.js"
+import { NEXT_CURSOR_HEADER } from "./lib/pagination.js"
 
 export function createApp() {
   const app = Fastify({ logger: { redact: ["req.headers.authorization", "req.headers.cookie"] }, trustProxy })
@@ -23,7 +24,8 @@ export function createApp() {
   })
 
   // Admin requests use bearer tokens, not cookies, so credentials are never needed.
-  app.register(cors, { origin: corsOrigins })
+  // The CRM reads the next page's cursor of admin lists from a response header.
+  app.register(cors, { origin: corsOrigins, exposedHeaders: [NEXT_CURSOR_HEADER] })
   // Opt-in per route (see the public form endpoints).
   app.register(rateLimit, { global: false })
   app.register(sensible)

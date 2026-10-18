@@ -16,6 +16,7 @@ const { migrate } = await import('drizzle-orm/node-postgres/migrator')
 const { createApp } = await import('../../dist/app.js')
 const { catalogueRoutes } = await import('../../dist/routes/catalogue.js')
 const { orderReviewRoutes, orderSummaries } = await import('../../dist/routes/order-review.js')
+const { adminInquiryRoutes } = await import('../../dist/routes/inquiries.js')
 const { db, pool } = await import('../../dist/db/client.js')
 
 await migrate(db, { migrationsFolder: fileURLToPath(new URL('../../drizzle', import.meta.url)) })
@@ -30,6 +31,7 @@ async function adminApp() {
   admin.addHook('preHandler', async request => { request.adminUser = { id: '0b9c6c34-3c51-4c1e-9a43-5d6a4b1f2e10', email: 'admin@example.com' } })
   await admin.register(catalogueRoutes)
   await admin.register(orderReviewRoutes)
+  await admin.register(adminInquiryRoutes)
   return admin
 }
 
@@ -142,6 +144,41 @@ test('orders are reviewed once, by a recorded admin', async () => {
     assert.equal(accepted.json().order.status, 'confirmed')
     assert.equal(accepted.json().order.reviewedByEmail, 'admin@example.com')
     assert.equal((await admin.inject({ method: 'PUT', url, payload: { decision: 'decline', reason: 'Too late now.' } })).statusCode, 409)
+  } finally {
+    await admin.close()
+  }
+})
+
+test('admin lists page through every row once, newest first, even with equal timestamps', async () => {
+  const admin = await adminApp()
+  try {
+    // Seven inquiries: three share one timestamp, and two differ only in microseconds, which
+    // a JavaScript Date can't tell apart.
+    const times = ['2026-01-01 10:00:00.000001+00', '2026-01-01 10:00:00.000002+00', '2026-01-02 10:00:00+00', '2026-01-02 10:00:00+00', '2026-01-02 10:00:00+00', '2026-01-03 10:00:00+00', '2026-01-04 10:00:00+00']
+    for (const [index, time] of times.entries()) {
+      await pool.query("INSERT INTO inquiries (full_name, email, locale, brief, created_at) VALUES ($1, 'a@example.com', 'bs', 'Upit za izradu', $2)", [`Kupac ${index}`, time])
+    }
+    const all = (await admin.inject('/inquiries')).json()
+    assert.equal(all.length, times.length)
+
+    for (const url of ['/inquiries', '/orders', '/products']) {
+      const everything = (await admin.inject(url)).json().map(row => row.id)
+      const paged = []
+      let cursor
+      for (let pages = 0; pages < 10; pages++) {
+        const response = await admin.inject(`${url}?limit=2${cursor ? `&before=${cursor}` : ''}`)
+        assert.equal(response.statusCode, 200)
+        assert.ok(response.json().length <= 2)
+        assert.ok(!response.body.includes('cursorTime'))
+        paged.push(...response.json().map(row => row.id))
+        cursor = response.headers['x-next-cursor']
+        if (!cursor) break
+      }
+      assert.deepEqual(paged, everything, url)
+    }
+
+    assert.equal((await admin.inject('/inquiries?limit=2&before=not-a-cursor')).statusCode, 400)
+    assert.equal((await admin.inject('/inquiries?limit=500')).statusCode, 400)
   } finally {
     await admin.close()
   }

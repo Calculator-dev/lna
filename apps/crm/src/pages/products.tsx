@@ -1,13 +1,13 @@
-import { useQuery } from "@tanstack/react-query"
 import { ImageOff } from "lucide-react"
 import { Link, useLocation } from "react-router"
 import { DataTable } from "../components/data-table"
 import { PageHeader } from "../components/page-header"
 import { buttonVariants } from "../components/ui/button"
 import { getProducts } from "../lib/api"
+import { usePagedList } from "../lib/use-paged-list"
 
 export function ProductsPage() {
-  const query = useQuery({ queryKey: ["products"], queryFn: getProducts })
+  const query = usePagedList("products", getProducts)
   const notice = (useLocation().state as { notice?: string } | null)?.notice
   return (
     <>
