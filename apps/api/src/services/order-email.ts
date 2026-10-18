@@ -42,6 +42,8 @@ async function sendEmail(input: { to: string; subject: string; html: string; rep
       method: "POST",
       headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({ from: env.ORDER_EMAIL_FROM, to: [input.to], subject: input.subject, html: input.html, ...(input.replyTo ? { reply_to: input.replyTo } : {}) }),
+      // Emails are sent inside the request, so a slow provider must not hang checkout or review.
+      signal: AbortSignal.timeout(10000),
     })
     return response.ok ? { sent: true } : { sent: false, reason: "delivery_failed" }
   } catch {

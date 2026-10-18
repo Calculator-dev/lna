@@ -162,6 +162,11 @@ export const orders = pgTable("orders", {
   shippingAmount: integer("shipping_amount").notNull().default(0),
   declineReason: text("decline_reason"),
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+  // Supabase user who accepted or declined the order; the email is kept for display.
+  reviewedBy: uuid("reviewed_by"),
+  reviewedByEmail: varchar("reviewed_by_email", { length: 190 }),
+  // Client-generated key that makes checkout retries return the original order.
+  idempotencyKey: varchar("idempotency_key", { length: 80 }).unique(),
   reviewEmailSentAt: timestamp("review_email_sent_at", { withTimezone: true }),
   confirmationEmailSentAt: timestamp("confirmation_email_sent_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
@@ -180,6 +185,13 @@ export const orderItems = pgTable("order_items", {
   productId: uuid("product_id")
     .notNull()
     .references(() => products.id),
+  // Snapshot of what was ordered, so later catalogue edits don't rewrite order history.
+  // sku and product_name are always written but stay nullable until every running instance
+  // writes them (the previous release keeps serving while migrations run); then make them NOT NULL.
+  variantId: uuid("variant_id").references(() => productVariants.id, { onDelete: "set null" }),
+  sku: varchar("sku", { length: 80 }),
+  productName: text("product_name"),
+  dimensions: text("dimensions"),
   quantity: integer("quantity").notNull(),
   unitPrice: integer("unit_price").notNull(),
   personalization: text("personalization"),

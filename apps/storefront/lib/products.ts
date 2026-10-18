@@ -221,7 +221,11 @@ export type OrderResponse = {
   total: number
 }
 
-export class OrderError extends Error {}
+export class OrderError extends Error {
+  constructor(message: string, readonly status?: number) {
+    super(message)
+  }
+}
 
 function browserApiUrl() {
   // Localhost is only a development default; production builds must set NEXT_PUBLIC_API_URL.
@@ -230,16 +234,18 @@ function browserApiUrl() {
   return apiUrl
 }
 
-export async function submitOrder(payload: OrderPayload): Promise<OrderResponse> {
+/** Retrying with the same idempotency key returns the original order instead of placing a second one. */
+export async function submitOrder(payload: OrderPayload, idempotencyKey: string): Promise<OrderResponse> {
   const response = await fetch(`${browserApiUrl()}/public/orders`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "Idempotency-Key": idempotencyKey,
     },
     body: JSON.stringify(payload),
   })
   const body = await response.json().catch(() => null) as (Partial<OrderResponse> & { message?: string }) | null
-  if (!response.ok || !body?.orderNumber) throw new OrderError(body?.message ?? "Order submission failed")
+  if (!response.ok || !body?.orderNumber) throw new OrderError(body?.message ?? "Order submission failed", response.status)
   return body as OrderResponse
 }
 

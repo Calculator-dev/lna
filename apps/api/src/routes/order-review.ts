@@ -36,7 +36,7 @@ export const orderReviewRoutes: FastifyPluginAsync = async app => {
         status: orders.status, paymentStatus: orders.paymentStatus,
         shippingAddress: orders.shippingAddress, notes: orders.notes,
         shippingAmount: orders.shippingAmount,
-        declineReason: orders.declineReason, reviewedAt: orders.reviewedAt,
+        declineReason: orders.declineReason, reviewedAt: orders.reviewedAt, reviewedByEmail: orders.reviewedByEmail,
         reviewEmailSentAt: orders.reviewEmailSentAt, confirmationEmailSentAt: orders.confirmationEmailSentAt,
         createdAt: orders.createdAt,
         customer: { fullName: customers.fullName, email: customers.email, phone: customers.phone },
@@ -49,9 +49,10 @@ export const orderReviewRoutes: FastifyPluginAsync = async app => {
 
     const items = await db
       .select({
-        id: orderItems.id, productId: orderItems.productId, sku: products.sku,
-        translations: products.translations, quantity: orderItems.quantity,
-        unitPrice: orderItems.unitPrice, personalization: orderItems.personalization,
+        id: orderItems.id, productId: orderItems.productId, variantId: orderItems.variantId,
+        sku: orderItems.sku, productName: orderItems.productName, dimensions: orderItems.dimensions,
+        quantity: orderItems.quantity, unitPrice: orderItems.unitPrice, personalization: orderItems.personalization,
+        productSku: products.sku, translations: products.translations,
       })
       .from(orderItems)
       .innerJoin(products, eq(products.id, orderItems.productId))
@@ -59,9 +60,13 @@ export const orderReviewRoutes: FastifyPluginAsync = async app => {
 
     return {
       ...order,
+      // Lines show what was ordered. The catalogue is only a fallback for lines written by the
+      // previous release while this one was deploying.
       items: items.map(item => ({
-        id: item.id, productId: item.productId, sku: item.sku,
-        name: item.translations[order.locale]?.name ?? item.translations.bs?.name ?? item.sku,
+        id: item.id, productId: item.productId, variantId: item.variantId,
+        sku: item.sku ?? item.productSku,
+        name: item.productName ?? item.translations[order.locale]?.name ?? item.translations.bs?.name ?? item.productSku,
+        dimensions: item.dimensions,
         quantity: item.quantity, unitPrice: item.unitPrice, personalization: item.personalization,
       })),
       subtotal: items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
@@ -89,7 +94,7 @@ export const orderReviewRoutes: FastifyPluginAsync = async app => {
       status: input.decision === "accept" ? "confirmed" : "declined",
       paymentStatus: input.decision === "decline" ? "cancelled" : "pending_manual",
       declineReason: input.decision === "decline" ? input.reason : null,
-      reviewedAt: now, updatedAt: now,
+      reviewedAt: now, reviewedBy: request.adminUser?.id, reviewedByEmail: request.adminUser?.email, updatedAt: now,
     }).where(and(eq(orders.id, id), eq(orders.status, "submitted"))).returning()
     if (!updated) return reply.code(409).send({ message: "Order has already been reviewed" })
 
@@ -99,9 +104,14 @@ export const orderReviewRoutes: FastifyPluginAsync = async app => {
       reason: input.decision === "decline" ? input.reason : undefined,
     })
     if (email.sent) {
+      // The decision is already saved, so a failure here must not turn the response into an error.
       const sentAt = new Date()
-      await db.update(orders).set({ reviewEmailSentAt: sentAt }).where(eq(orders.id, id))
-      updated.reviewEmailSentAt = sentAt
+      try {
+        await db.update(orders).set({ reviewEmailSentAt: sentAt }).where(eq(orders.id, id))
+        updated.reviewEmailSentAt = sentAt
+      } catch {
+        request.log.warn({ orderId: id }, "Order decision email sent but timestamp could not be saved")
+      }
     }
     return { order: updated, notification: email }
   })

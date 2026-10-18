@@ -5,7 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { toast } from "sonner"
 import { useCart } from "@/components/cart-provider"
 import { formatPrice, OrderError, submitOrder, type Locale, isSvg } from "@/lib/products"
@@ -14,6 +14,9 @@ export function CheckoutClient({ locale }: { locale: Locale }) {
   const router = useRouter()
   const { items, subtotal, shippingAmount: shipping, clear } = useCart()
   const [submitting, setSubmitting] = useState(false)
+  // One key per checkout attempt: retries after a network error or lost response reuse it, so
+  // they return the order already placed rather than creating a duplicate.
+  const idempotencyKey = useRef<string | null>(null)
   const t = useTranslations("checkout")
   const cart = useTranslations("cart")
 
@@ -25,6 +28,7 @@ export function CheckoutClient({ locale }: { locale: Locale }) {
 
     const formData = new FormData(event.currentTarget)
     setSubmitting(true)
+    idempotencyKey.current ??= crypto.randomUUID()
 
     try {
       const response = await submitOrder({
@@ -47,12 +51,14 @@ export function CheckoutClient({ locale }: { locale: Locale }) {
           quantity: item.quantity,
           personalization: item.personalization,
         })),
-      })
+      }, idempotencyKey.current)
 
       clear()
       const successBase = locale === "en" ? "/en/checkout/success" : "/checkout/success"
       router.push(`${successBase}?order=${encodeURIComponent(response.orderNumber)}`)
     } catch (error) {
+      // A rejected request placed no order, so the corrected resubmission is a new attempt.
+      if (error instanceof OrderError && error.status === 400) idempotencyKey.current = null
       // Validation messages from the API are English; show them as detail after the localized summary.
       const detail = error instanceof OrderError && error.message !== "Order submission failed" ? ` (${error.message})` : ""
       toast.error(t("submitError") + detail)
