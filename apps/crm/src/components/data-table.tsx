@@ -6,7 +6,14 @@ import { Card } from "./ui/card"
 type Row = { id: string } & Record<string, string>
 
 /** The parts of a query result the table renders; pass a useQuery result or a derived one. */
-export type TableState<T> = { data?: T[]; isPending: boolean; error: Error | null; refetch: () => unknown }
+export type TableState<T> = {
+  data?: T[]
+  isPending: boolean
+  error: Error | null
+  refetch: () => unknown
+  /** Set while more rows can be loaded (see usePagedList). */
+  more?: { loading: boolean; error: Error | null; load: () => void }
+}
 
 export function DataTable<T extends Row>({ query, columns, rowHref, actionLabel = "Uredi", emptyText = "Još nema stavki." }: {
   query: TableState<T>
@@ -50,6 +57,14 @@ export function DataTable<T extends Row>({ query, columns, rowHref, actionLabel 
           ))}
         </tbody>
       </table>
+      {query.more && (
+        <div className="mt-4 border-t border-border pt-4 text-center">
+          {query.more.error && <p role="alert" className="mb-3 text-sm text-destructive">Sljedeće stavke nije moguće učitati: {query.more.error.message}</p>}
+          <Button variant="outline" disabled={query.more.loading} onClick={query.more.load}>
+            {query.more.loading ? "Učitavanje…" : "Učitaj još"}
+          </Button>
+        </div>
+      )}
     </Card>
   )
 }

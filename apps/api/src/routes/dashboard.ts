@@ -25,7 +25,7 @@ export const dashboardRoutes: FastifyPluginAsync = async app => {
         inquiriesLast30Days: recentInquiries.value,
         productsActive: catalogue.value,
       },
-      recentOrders,
+      recentOrders: recentOrders.map(({ cursorTime: _cursorTime, ...order }) => order),
     }
   })
 }

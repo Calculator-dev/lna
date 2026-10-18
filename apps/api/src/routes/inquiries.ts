@@ -5,6 +5,7 @@ import { db } from "../db/client.js"
 import { inquiries } from "../db/schema.js"
 import { sendInquiryNotification } from "../services/order-email.js"
 import { publicFormRateLimit } from "../lib/rate-limits.js"
+import { beforeCursor, cursorTime, page, pageQuery } from "../lib/pagination.js"
 
 const optionalText = (max: number) => z.string().trim().max(max).optional().transform(value => value || undefined)
 
@@ -31,10 +32,15 @@ export const publicInquiryRoutes: FastifyPluginAsync = async app => {
 
 // Registered inside the authenticated admin route scope.
 export const adminInquiryRoutes: FastifyPluginAsync = async app => {
-  app.get("/inquiries", async () => db
-    .select({ id: inquiries.id, fullName: inquiries.fullName, email: inquiries.email, brief: inquiries.brief, deadline: inquiries.deadline, createdAt: inquiries.createdAt })
-    .from(inquiries)
-    .orderBy(desc(inquiries.createdAt)))
+  app.get("/inquiries", async (request, reply) => {
+    const { limit, before } = pageQuery.parse(request.query)
+    const query = db
+      .select({ id: inquiries.id, fullName: inquiries.fullName, email: inquiries.email, brief: inquiries.brief, deadline: inquiries.deadline, createdAt: inquiries.createdAt, cursorTime: cursorTime(inquiries.createdAt) })
+      .from(inquiries)
+      .where(before ? beforeCursor(inquiries.createdAt, inquiries.id, before) : undefined)
+      .orderBy(desc(inquiries.createdAt), desc(inquiries.id))
+    return page(reply, await (limit ? query.limit(limit + 1) : query), limit)
+  })
 
   app.get("/inquiries/:id", async (request, reply) => {
     const { id } = z.object({ id: z.string().uuid() }).parse(request.params)

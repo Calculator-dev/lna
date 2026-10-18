@@ -26,7 +26,7 @@ test("product list includes a signed primary-image thumbnail without storage key
   let imageQueries = 0;
   db.select = () => ({
     from: (table) => {
-      if (table === products) return { orderBy: async () => [withImage, withoutImage] };
+      if (table === products) return { where: () => ({ orderBy: async () => [withImage, withoutImage] }) };
       assert.equal(table, mediaAssets);
       imageQueries++;
       return { where: async () => [primary] };
@@ -43,7 +43,7 @@ test("product list includes a signed primary-image thumbnail without storage key
     assert.ok(!response.body.includes("storageKey"));
 
     // An empty catalogue skips the image query entirely.
-    db.select = () => ({ from: () => ({ orderBy: async () => [] }) });
+    db.select = () => ({ from: () => ({ where: () => ({ orderBy: async () => [] }) }) });
     assert.deepEqual((await app.inject("/products")).json(), []);
   } finally {
     db.select = oldSelect;

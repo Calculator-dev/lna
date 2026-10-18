@@ -30,6 +30,8 @@ test('CORS only allows configured origins and never credentials', async () => {
     const allowed = await app.inject({ url: '/health', headers: { origin: 'http://localhost:3001' } })
     assert.equal(allowed.headers['access-control-allow-origin'], 'http://localhost:3001')
     assert.equal(allowed.headers['access-control-allow-credentials'], undefined)
+    // The CRM reads the next page's cursor of admin lists from this header.
+    assert.equal(allowed.headers['access-control-expose-headers'], 'X-Next-Cursor')
     const other = await app.inject({ url: '/health', headers: { origin: 'https://attacker.example' } })
     assert.equal(other.headers['access-control-allow-origin'], undefined)
   } finally {
