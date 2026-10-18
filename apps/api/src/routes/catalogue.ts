@@ -12,6 +12,7 @@ import {
 } from "../db/schema.js";
 import { productInput, slugFor } from "../lib/product-input.js";
 import { publicVariants } from "../lib/variants.js";
+import { revalidateStorefrontCatalogue } from "../services/storefront.js";
 
 // Registered inside the authenticated admin route scope.
 export const catalogueRoutes: FastifyPluginAsync = async (app) => {
@@ -271,6 +272,7 @@ export const catalogueRoutes: FastifyPluginAsync = async (app) => {
         }
         return saved;
       });
+      await revalidateStorefrontCatalogue(request.log);
       return reply.code(productId ? 200 : 201).send(product);
     } catch (error) {
       const failure = error as { code?: string; cause?: { code?: string } };

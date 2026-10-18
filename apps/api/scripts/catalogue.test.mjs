@@ -9,6 +9,7 @@ const { db, pool } = await import("../dist/db/client.js");
 const { categories, products, productVariants } =
   await import("../dist/db/schema.js");
 const { productInput } = await import("../dist/lib/product-input.js");
+const { env } = await import("../dist/env.js");
 const categoryId = "626a4408-646c-4d99-bb56-edbd40b1a10b";
 const translation = {
   name: "Zidno ime",
@@ -60,6 +61,15 @@ test("product creation saves complete data, supports new categories, and handles
   );
   await app.register(catalogueRoutes);
   const original = db.transaction;
+  const originalFetch = globalThis.fetch;
+  Object.assign(env, { STOREFRONT_REVALIDATE_URL: "http://storefront.test/api/revalidate", REVALIDATE_SECRET: "s".repeat(32) });
+  const revalidations = [];
+  let storefrontDown = false;
+  globalThis.fetch = async (url, init) => {
+    revalidations.push({ url, authorization: init.headers.Authorization });
+    if (storefrontDown) throw new Error("connect ECONNREFUSED");
+    return new Response(null, { status: 204 });
+  };
   let writes = [];
   let hasCategory = true;
   let conflict = false;
@@ -103,6 +113,13 @@ test("product creation saves complete data, supports new categories, and handles
     assert.equal(response.json().priceFrom, undefined);
     assert.match(response.json().translations.bs.slug, /^zidno-ime-/);
     assert.equal(response.json().seo.en.title, "Wall name | LNA kreativna sehara");
+    // A save expires the storefront's cached catalogue.
+    assert.deepEqual(revalidations, [{ url: "http://storefront.test/api/revalidate", authorization: `Bearer ${"s".repeat(32)}` }]);
+
+    // An unreachable storefront doesn't fail the save; its cache times out on its own.
+    storefrontDown = true;
+    assert.equal((await app.inject({ method: "POST", url: "/products", payload })).statusCode, 201);
+    storefrontDown = false;
 
     writes = [];
     const { categoryId: _old, ...withoutCategory } = payload;
@@ -117,7 +134,7 @@ test("product creation saves complete data, supports new categories, and handles
     assert.equal(writes[1].values.categoryId, writes[0].values.id);
     assert.equal(writes[2].table, productVariants);
     assert.equal(writes[2].values[0].productId, writes[1].values.id);
-    assert.equal(transactions, 2);
+    assert.equal(transactions, 3);
 
     writes = [];
     hasCategory = false;
@@ -136,6 +153,8 @@ test("product creation saves complete data, supports new categories, and handles
     });
     assert.equal(duplicate.statusCode, 409);
     assert.match(duplicate.json().message, /SKU already exists/);
+    // Failed saves change nothing, so they don't touch the storefront cache.
+    assert.equal(revalidations.length, 3);
     const before = transactions;
     assert.equal(
       (
@@ -153,6 +172,8 @@ test("product creation saves complete data, supports new categories, and handles
     assert.equal(transactions, before);
   } finally {
     db.transaction = original;
+    globalThis.fetch = originalFetch;
+    Object.assign(env, { STOREFRONT_REVALIDATE_URL: undefined, REVALIDATE_SECRET: undefined });
     await app.close();
     await pool.end();
   }

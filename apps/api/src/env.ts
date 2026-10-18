@@ -25,6 +25,10 @@ const envSchema = z.object({
   BACKBLAZE_PUBLIC_URL: z.string().url().optional(),
   RESEND_API_KEY: z.string().optional(),
   ORDER_EMAIL_FROM: z.string().optional(),
+  // Storefront endpoint that drops its cached catalogue after CRM edits, and the secret both
+  // sides share. scripts/dev.mjs and scripts/start-production.mjs set both automatically.
+  STOREFRONT_REVALIDATE_URL: z.string().url().optional(),
+  REVALIDATE_SECRET: z.string().min(32).optional(),
   INQUIRY_NOTIFY_EMAIL: z.preprocess(value => value === "" ? undefined : value, z.string().email().optional()),
 })
 
