@@ -36,3 +36,16 @@ test('CORS only allows configured origins and never credentials', async () => {
     await app.close()
   }
 })
+
+test('responses carry security headers, including errors', async () => {
+  const app = createApp()
+  try {
+    for (const response of [await app.inject('/health'), await app.inject('/missing'), await app.inject('/admin/me')]) {
+      assert.equal(response.headers['x-content-type-options'], 'nosniff')
+      assert.equal(response.headers['x-frame-options'], 'DENY')
+      assert.equal(response.headers['content-security-policy'], "default-src 'none'; frame-ancestors 'none'")
+    }
+  } finally {
+    await app.close()
+  }
+})

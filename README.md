@@ -27,6 +27,9 @@ Other root commands, also run in CI (`.github/workflows/ci.yml`):
 - `pnpm typecheck`: TypeScript checks for all apps.
 - `pnpm test`: API and CRM tests. Tests mock the database, Supabase and storage.
 - `pnpm build`: production builds of all apps.
+- `pnpm --filter @lna/api test:integration`: migrations, checkout, product saves and order
+  review against a real Postgres. Set `TEST_DATABASE_URL` to an empty, throwaway database:
+  the tests empty its tables. CI runs it in a separate job with its own Postgres.
 
 ## Configuration
 
