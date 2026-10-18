@@ -186,11 +186,9 @@ export const orderItems = pgTable("order_items", {
     .notNull()
     .references(() => products.id),
   // Snapshot of what was ordered, so later catalogue edits don't rewrite order history.
-  // sku and product_name are always written but stay nullable until every running instance
-  // writes them (the previous release keeps serving while migrations run); then make them NOT NULL.
   variantId: uuid("variant_id").references(() => productVariants.id, { onDelete: "set null" }),
-  sku: varchar("sku", { length: 80 }),
-  productName: text("product_name"),
+  sku: varchar("sku", { length: 80 }).notNull(),
+  productName: text("product_name").notNull(),
   dimensions: text("dimensions"),
   quantity: integer("quantity").notNull(),
   unitPrice: integer("unit_price").notNull(),

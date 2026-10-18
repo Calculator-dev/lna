@@ -13,6 +13,7 @@
     "db:check": "node --env-file-if-exists=.env --import tsx src/db/check.ts",
     "db:backup": "node --env-file-if-exists=.env scripts/backup-database.mjs",
     "test": "tsc -p tsconfig.build.json && node --test scripts/*.test.mjs",
+    "test:integration": "tsc -p tsconfig.build.json && node --test scripts/integration/*.test.mjs",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {

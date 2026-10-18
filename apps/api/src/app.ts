@@ -28,6 +28,15 @@ export function createApp() {
   app.register(rateLimit, { global: false })
   app.register(sensible)
 
+  // The API only serves JSON (and image redirects), so nothing it returns may be framed,
+  // sniffed as another type, or run scripts.
+  app.addHook("onSend", async (_request, reply) => {
+    reply.header("X-Content-Type-Options", "nosniff")
+    reply.header("X-Frame-Options", "DENY")
+    reply.header("Referrer-Policy", "strict-origin-when-cross-origin")
+    reply.header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'")
+  })
+
   app.get("/health", async () => ({ ok: true }))
   app.register(publicRoutes, { prefix: "/public" })
   app.register(adminRoutes, { prefix: "/admin" })
