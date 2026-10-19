@@ -24,7 +24,10 @@ process.env.REVALIDATE_SECRET ||= randomBytes(32).toString('hex')
 
 // The API validates its environment on import, so a misconfiguration stops startup here.
 const { createApp } = await import('../apps/api/dist/app.js')
+const { startEmailWorker } = await import('../apps/api/dist/services/email-outbox.js')
 const api = createApp()
+// Sends queued order and inquiry emails from this process.
+startEmailWorker(api)
 await api.ready()
 
 // Resolve Next.js from the storefront package (pnpm keeps it out of the root node_modules).

@@ -54,7 +54,8 @@ test('orders use database prices, reject missing products, and report storage fa
     assert.equal(inserts.length, 0)
     assert.match(response.json().orderNumber, /^LNA-\d{6}-[A-F0-9]{8}$/)
     assert.equal(response.json().orderNumber.length, 19)
-    assert.deepEqual(response.json().notification, { sent: false, reason: 'not_configured' })
+    // Without email settings nothing is queued, so no stale backlog goes out once they're added.
+    assert.deepEqual(response.json().notification, { queued: false, reason: 'not_configured' })
     assert.equal(response.json().payload, undefined)
 
     selected = []
