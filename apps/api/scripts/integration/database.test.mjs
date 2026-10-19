@@ -250,3 +250,33 @@ test('emails are queued with their change, retried with backoff, and sent once',
     Object.assign(env, { RESEND_API_KEY: undefined, ORDER_EMAIL_FROM: undefined, INQUIRY_NOTIFY_EMAIL: undefined })
   }
 })
+
+test('deleting a product removes it, or archives it when orders refer to it', async () => {
+  const admin = await adminApp()
+  try {
+    // A product nobody ordered goes away entirely, with its variants.
+    const fresh = await admin.inject({ method: 'POST', url: '/products', payload: { ...product, newCategory: { bs: 'Ostalo', en: 'Other' }, variants: [{ sku: 'TO-DELETE', dimensions: '5 cm', priceMinor: 500 }] } })
+    assert.equal(fresh.statusCode, 201)
+    const removed = await admin.inject({ method: 'DELETE', url: `/products/${fresh.json().id}` })
+    assert.deepEqual(removed.json(), { outcome: 'deleted' })
+    assert.equal((await pool.query("SELECT count(*)::int AS n FROM product_variants WHERE sku = 'TO-DELETE'")).rows[0].n, 0)
+
+    // The ordered product is archived: gone from the shop, the CRM list and checkout,
+    // while its orders still show what was bought.
+    const { rows: [ordered] } = await pool.query('SELECT DISTINCT product_id AS id FROM order_items LIMIT 1')
+    const archived = await admin.inject({ method: 'DELETE', url: `/products/${ordered.id}` })
+    assert.deepEqual(archived.json(), { outcome: 'archived' })
+    assert.equal((await admin.inject({ method: 'DELETE', url: `/products/${ordered.id}` })).statusCode, 404)
+    assert.ok(!(await admin.inject('/products')).json().some(row => row.id === ordered.id))
+    assert.equal((await admin.inject(`/products/${ordered.id}`)).statusCode, 404)
+    assert.ok(!(await app.inject('/public/catalogue')).json().products.some(row => row.id === ordered.id))
+    const checkout = await app.inject({ method: 'POST', url: '/public/orders', payload: { locale: 'bs', customer, shipping, items: [{ productId: ordered.id, quantity: 1 }] } })
+    assert.equal(checkout.statusCode, 400)
+    const [summary] = await orderSummaries().limit(1)
+    const detail = (await admin.inject(`/orders/${summary.id}`)).json()
+    assert.ok(detail.items.length > 0)
+    assert.ok(detail.items.every(item => item.name && item.imageUrl === null))
+  } finally {
+    await admin.close()
+  }
+})

@@ -3,7 +3,7 @@ import { imageUrl } from "../services/backblaze.js"
 import type { FastifyPluginAsync } from "fastify"
 import { z } from "zod"
 import { randomBytes } from "node:crypto"
-import { inArray, sql, eq, and, isNotNull } from "drizzle-orm"
+import { inArray, sql, eq, and, isNotNull, isNull } from "drizzle-orm"
 import { db } from "../db/client.js"
 import { categories, products, customers, orders, orderItems, mediaAssets, productVariants } from "../db/schema.js"
 import { queueEmail, wakeEmailWorker } from "../services/email-outbox.js"
@@ -56,7 +56,7 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
 
   app.get("/products", async (request) => {
     const locale = localeSchema.parse((request.query as { locale?: string }).locale)
-    const rows = await db.select().from(products)
+    const rows = await db.select().from(products).where(isNull(products.archivedAt))
     const byProduct = await variantsFor(rows.map(product => product.id))
     return rows.map((product) => ({
       id: product.id,
@@ -78,7 +78,7 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
   app.get("/products/:slug", async (request, reply) => {
     const params = z.object({ slug: z.string().min(1) }).parse(request.params)
     const locale = localeSchema.parse((request.query as { locale?: string }).locale)
-    const [product] = await db.select().from(products).where(sql`${products.translations}->${locale}->>'slug' = ${params.slug}`).limit(1)
+    const [product] = await db.select().from(products).where(and(isNull(products.archivedAt), sql`${products.translations}->${locale}->>'slug' = ${params.slug}`)).limit(1)
 
     if (!product) {
       return reply.code(404).send({ message: "Product not found" })
@@ -159,7 +159,7 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
 
     const orderNumber = createOrderNumber()
     const placeOrder = () => db.transaction(async (tx) => {
-      const selected = await tx.select().from(products).where(inArray(products.id, payload.items.map((item) => item.productId))).for("share")
+      const selected = await tx.select().from(products).where(and(isNull(products.archivedAt), inArray(products.id, payload.items.map((item) => item.productId)))).for("share")
       const byId = new Map(selected.map((product) => [product.id, product]))
       const variantIds = payload.items.flatMap(item => item.variantId ? [item.variantId] : [])
       const selectedVariants = variantIds.length

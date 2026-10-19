@@ -7,20 +7,23 @@ export class ApiError extends Error {
   }
 }
 
-async function fetchJson<T>(path: string, options?: { method: "POST" | "PUT"; body: unknown }): Promise<T> {
+type RequestOptions = { method: "POST" | "PUT"; body: unknown } | { method: "DELETE" }
+
+async function fetchJson<T>(path: string, options?: RequestOptions): Promise<T> {
   return (await request(path, options)).json() as Promise<T>
 }
 
-async function request(path: string, options?: { method: "POST" | "PUT"; body: unknown }): Promise<Response> {
+async function request(path: string, options?: RequestOptions): Promise<Response> {
   if (!API_URL || !supabase) throw new Error("Administratorski servis nije konfigurisan")
   const { data, error } = await supabase.auth.getSession()
   if (error || !data.session) throw new Error("Potrebna je prijava")
 
   const response = await fetch(`${API_URL}${path}`, {
     method: options?.method ?? "GET",
-    body: options ? JSON.stringify(options.body) : undefined,
+    body: options && "body" in options ? JSON.stringify(options.body) : undefined,
     headers: {
-      "Content-Type": "application/json",
+      // Only requests with a body declare one; the API rejects an empty JSON body.
+      ...(options && "body" in options ? { "Content-Type": "application/json" } : {}),
       Authorization: `Bearer ${data.session.access_token}`,
     },
   })
@@ -87,6 +90,11 @@ export function getProduct(id: string) {
 }
 export function updateProduct(id: string, body: unknown) {
   return fetchJson<ProductDetails>(`/admin/products/${encodeURIComponent(id)}`, { method: "PUT", body })
+}
+
+/** "deleted" when nobody ordered it; "archived" (hidden, kept for its orders) otherwise. */
+export function deleteProduct(id: string) {
+  return fetchJson<{ outcome: "deleted" | "archived" }>(`/admin/products/${encodeURIComponent(id)}`, { method: "DELETE" })
 }
 
 export async function uploadProductImage(file: File): Promise<import("./admin-data").ProductImage> {

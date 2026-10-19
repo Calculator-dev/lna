@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify"
-import { count, gte, inArray, sql } from "drizzle-orm"
+import { count, gte, inArray, isNull, sql } from "drizzle-orm"
 import { db } from "../db/client.js"
 import { inquiries, orders, products } from "../db/schema.js"
 import { orderSummaries } from "./order-review.js"
@@ -14,7 +14,7 @@ export const dashboardRoutes: FastifyPluginAsync = async app => {
       db.select({ value: count() }).from(orders).where(inArray(orders.status, ["submitted"])),
       db.select({ value: count() }).from(orders).where(inArray(orders.status, ["confirmed", "in_production"])),
       db.select({ value: count() }).from(inquiries).where(gte(inquiries.createdAt, sql`now() - interval '30 days'`)),
-      db.select({ value: count() }).from(products),
+      db.select({ value: count() }).from(products).where(isNull(products.archivedAt)),
       orderSummaries().limit(5),
     ])
     return {

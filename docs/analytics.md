@@ -73,7 +73,7 @@ When the real domain goes live, update the GA4 data stream URL and `NEXT_PUBLIC_
 
 Tag every link you share with UTM parameters, e.g.
 
-    https://lnakreativnasehara.ba/shop?utm_source=instagram&utm_medium=social&utm_campaign=jesen-2026
+    https://lnasehara.com/shop?utm_source=instagram&utm_medium=social&utm_campaign=jesen-2026
 
 Use lowercase and the same few values each time (`utm_medium`: `social`, `paid_social`, `cpc`,
 `email`), since GA4 groups by exact text. Google Ads and Meta add `gclid` / `fbclid` themselves.

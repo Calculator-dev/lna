@@ -10,5 +10,5 @@ export function NewProductPage() {
 export function EditProductPage() {
   const navigate = useNavigate()
   const { id = "" } = useParams()
-  return <EditProduct id={id} onCancel={() => navigate("/products")} onSaved={() => navigate("/products", { state: { notice: "Proizvod je uspješno ažuriran." } })} />
+  return <EditProduct id={id} onCancel={() => navigate("/products")} onSaved={() => navigate("/products", { state: { notice: "Proizvod je uspješno ažuriran." } })} onDeleted={notice => navigate("/products", { state: { notice } })} />
 }

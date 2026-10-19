@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 import { Link, NavLink, Outlet, useLocation, type RouteObject } from "react-router"
-import { Boxes, LayoutDashboard, MessageSquareMore, ShoppingCart, Sparkles } from "lucide-react"
+import { Boxes, LayoutDashboard, MessageSquareMore, ShoppingCart } from "lucide-react"
 import { PageHeader } from "./components/page-header"
 import { DashboardPage } from "./pages/dashboard"
 import { InquiriesPage, InquiryPage } from "./pages/inquiries"
@@ -32,14 +32,9 @@ function Layout() {
     <div className="min-h-screen bg-background text-foreground">
       <div className="grid min-h-screen lg:grid-cols-[260px_1fr]">
         <aside className="border-r border-border bg-card/70 p-5">
-          <Link to="/" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <Sparkles className="h-5 w-5" aria-hidden />
-            </span>
-            <span>
-              <span className="block font-serif text-2xl">LNA kreativna sehara</span>
-              <span className="block text-xs uppercase tracking-[0.24em] text-muted-foreground">CRM</span>
-            </span>
+          <Link to="/" className="flex items-center gap-3" aria-label="LNA kreativna sehara CRM">
+            <img src="/logo.png" alt="" width={390} height={225} className="h-12 w-auto" />
+            <span className="text-xs uppercase tracking-[0.24em] text-muted-foreground">CRM</span>
           </Link>
           <nav aria-label="Glavna navigacija" className="mt-8 space-y-2">
             {navigation.map(({ to, label, icon: Icon }) => (

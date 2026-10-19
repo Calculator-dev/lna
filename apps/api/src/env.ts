@@ -29,6 +29,9 @@ const envSchema = z.object({
   // sides share. scripts/dev.mjs and scripts/start-production.mjs set both automatically.
   STOREFRONT_REVALIDATE_URL: z.string().url().optional(),
   REVALIDATE_SECRET: z.string().min(32).optional(),
+  // The shop's public address (shared with the storefront in the combined server); emails use it
+  // for the logo.
+  NEXT_PUBLIC_SITE_URL: z.preprocess(value => value === "" ? undefined : value, z.string().url().optional()),
   INQUIRY_NOTIFY_EMAIL: z.preprocess(value => value === "" ? undefined : value, z.string().email().optional()),
 })
 

@@ -134,7 +134,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
 
   return <main className="flex min-h-screen items-center justify-center bg-background p-6">
     <section className="w-full max-w-md space-y-6 rounded-xl border bg-card p-8 shadow-sm">
-      <div><p className="text-sm text-muted-foreground">LNA kreativna sehara CRM</p><h1 className="mt-2 font-serif text-3xl">Administratorska prijava</h1></div>
+      <div><img src="/logo.png" alt="LNA kreativna sehara" width={390} height={225} className="h-16 w-auto" /><p className="mt-4 text-sm text-muted-foreground">CRM</p><h1 className="mt-2 font-serif text-3xl">Administratorska prijava</h1></div>
       {!configured ? <p>Administratorska prijava još nije dostupna. Obratite se administratoru stranice.</p> : !loaded ? <p role="status">Učitavanje sesije…</p> : session ? <>
         {!error && <p role="status">Provjera administratorskog pristupa…</p>}
         {error && <><p role="alert">{error}</p><Button onClick={() => { setAccessDenied(false); setAttempt(value => value + 1) }}>Pokušaj ponovo</Button></>}

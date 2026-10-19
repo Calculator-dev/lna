@@ -15,7 +15,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
       <span className="ornament block text-honey/70" aria-hidden />
       <div className="mx-auto grid max-w-375 gap-12 px-4 py-16 md:grid-cols-12 md:px-6 md:py-20">
         <div className="md:col-span-6">
-          <Wordmark size="lg" className="text-linen" />
+          <Wordmark size="lg" tone="light" alt="LNA kreativna sehara" />
           <p className="mt-6 max-w-lg text-sm leading-7 text-linen/65">
             {t("description")}
           </p>
@@ -36,8 +36,8 @@ export function SiteFooter({ locale }: { locale: Locale }) {
         <div className="md:col-span-3">
           <p className="eyebrow text-honey">{t("contact")}</p>
           <div className="mt-5 space-y-3 text-sm text-linen/75">
-            <a href="mailto:info@lnakreativnasehara.ba" className="block w-fit hover:text-honey">info@lnakreativnasehara.ba</a>
-            <a href="tel:+38761000000" className="block w-fit hover:text-honey">+387 61 000 000</a>
+            <a href="mailto:info@lnasehara.com" className="block w-fit hover:text-honey">info@lnasehara.com</a>
+            <a href="tel:+38761518703" className="block w-fit hover:text-honey">+387 61 518 703</a>
             <p>{t("location")}</p>
           </div>
         </div>

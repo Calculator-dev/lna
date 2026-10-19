@@ -162,6 +162,8 @@ export type AdminOrderDetail = {
     quantity: number;
     unitPriceMinor: number;
     personalization: string | null;
+    /** The product's current main image, if it has one. */
+    imageUrl: string | null;
   }>;
 };
 

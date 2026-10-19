@@ -167,3 +167,13 @@ test('izvor posjete prikazuje kampanju ili direktnu posjetu', async () => {
   assert.match(html, /Meta/)
   assert.match(renderToString(<AttributionCard attribution={null} />), /Direktna posjeta/)
 })
+
+test('brisanje proizvoda traži potvrdu prije slanja', async () => {
+  const { DeleteProduct } = await import('../src/components/delete-product.tsx')
+  const client = new QueryClient()
+  const html = render(client, <DeleteProduct id="p1" name="Monogram" onDeleted={() => {}} />)
+  assert.match(html, /Obriši proizvod/)
+  // The confirming button only appears after the first click.
+  assert.doesNotMatch(html, /Da, obriši proizvod/)
+  client.clear()
+})

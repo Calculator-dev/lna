@@ -50,6 +50,13 @@
       "when": 1792415072025,
       "tag": "0006_attribution",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792430878541,
+      "tag": "0007_archive_products",
+      "breakpoints": true
     }
   ]
 }

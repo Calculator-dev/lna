@@ -88,6 +88,9 @@ export const products = pgTable("products", {
   seo: jsonb("seo")
     .$type<Record<string, { title: string; description: string }>>()
     .notNull(),
+  // Set when a product that appears in orders is deleted: it leaves the shop and the CRM
+  // list, and its orders keep pointing at it. Products never ordered are deleted outright.
+  archivedAt: timestamp("archived_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

@@ -31,6 +31,13 @@ export type InquiryNotification = {
   attribution?: { source?: string; medium?: string; campaign?: string }
 }
 
+/** The shop's logo, served by the storefront; left out while the shop's address isn't set. */
+function logo() {
+  if (!env.NEXT_PUBLIC_SITE_URL) return ""
+  const src = `${env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "")}/logo.png`
+  return `<img src="${escapeHtml(src)}" alt="LNA kreativna sehara" width="160" height="92" style="display:block;border:0;margin:0 0 24px">`
+}
+
 export type EmailResult = { sent: true } | { sent: false; reason: "not_configured" | "delivery_failed" }
 
 const escapeHtml = (value: string) => value.replace(/[&<>'"]/g, character => ({
@@ -63,6 +70,7 @@ export async function sendOrderConfirmationEmail(input: ConfirmationEmail): Prom
   const location = [input.shipping.postalCode, input.shipping.city].filter(Boolean).join(" ")
   const subject = bosnian ? `Primili smo vašu narudžbu ${input.orderNumber}` : `We received your order ${input.orderNumber}`
   const html = `<div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;color:#222">
+    ${logo()}
     <h1 style="font-size:26px">${bosnian ? "Hvala na narudžbi" : "Thank you for your order"}</h1>
     <p>${escapeHtml(bosnian ? `Poštovani/a ${input.fullName},` : `Dear ${input.fullName},`)}</p>
     <p>${bosnian ? "Vaša narudžba je uspješno zaprimljena. Pregledat ćemo dostupnost i javiti vam se uskoro." : "Your order has been received successfully. We will review availability and contact you shortly."}</p>
@@ -90,7 +98,7 @@ export async function sendOrderDecisionEmail(input: DecisionEmail): Promise<Emai
       : `Unfortunately, your order has been declined.<br><br><strong>Reason:</strong> ${escapeHtml(input.reason ?? "")}`
   const closing = bosnian ? "Srdačno,<br>LNA kreativna sehara" : "Kind regards,<br>LNA kreativna sehara"
 
-  return sendEmail({ to: input.to, subject, html: `<p>${escapeHtml(greeting)}</p><p>${message}</p><p>${closing}</p>` })
+  return sendEmail({ to: input.to, subject, html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;color:#222">${logo()}<p>${escapeHtml(greeting)}</p><p>${message}</p><p>${closing}</p></div>` })
 }
 
 /** Tells the shop about a new custom-work inquiry; replies go straight to the customer. */
