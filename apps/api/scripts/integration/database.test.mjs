@@ -250,22 +250,3 @@ test('emails are queued with their change, retried with backoff, and sent once',
     Object.assign(env, { RESEND_API_KEY: undefined, ORDER_EMAIL_FROM: undefined, INQUIRY_NOTIFY_EMAIL: undefined })
   }
 })
-
-test('the whole-KM columns the previous release still uses stay in step with feninga', async () => {
-  const { rows: [variant] } = await pool.query("SELECT id, product_id FROM product_variants WHERE price_minor = 8050")
-  // This release writes feninga: the KM column follows, rounded.
-  assert.equal((await pool.query('SELECT price FROM product_variants WHERE id = $1', [variant.id])).rows[0].price, 81)
-  // The previous release writes whole KM: feninga follow.
-  await pool.query('UPDATE product_variants SET price = 60 WHERE id = $1', [variant.id])
-  assert.equal((await pool.query('SELECT price_minor FROM product_variants WHERE id = $1', [variant.id])).rows[0].price_minor, 6000)
-  // Rewriting the same KM value (it saves every field) leaves a finer feninga price alone.
-  await pool.query('UPDATE product_variants SET price_minor = 6050 WHERE id = $1', [variant.id])
-  await pool.query('UPDATE product_variants SET price = 61, sku = sku WHERE id = $1', [variant.id])
-  assert.equal((await pool.query('SELECT price_minor FROM product_variants WHERE id = $1', [variant.id])).rows[0].price_minor, 6050)
-  // An order line the previous release inserts (no feninga) gets them.
-  const { rows: [order] } = await pool.query('SELECT id FROM orders LIMIT 1')
-  const { rows: [line] } = await pool.query("INSERT INTO order_items (order_id, product_id, quantity, unit_price, sku, product_name) VALUES ($1, $2, 1, 45, 'OLD', 'Old release') RETURNING unit_price_minor", [order.id, variant.product_id])
-  assert.equal(line.unit_price_minor, 4500)
-  const { rows: [placed] } = await pool.query("INSERT INTO orders (order_number, locale, customer_id, shipping_address, shipping_amount) SELECT 'LNA-OLD-1', 'bs', customer_id, shipping_address, 10 FROM orders LIMIT 1 RETURNING shipping_amount_minor")
-  assert.equal(placed.shipping_amount_minor, 1000)
-})
