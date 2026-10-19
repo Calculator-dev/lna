@@ -11,6 +11,7 @@ import { shippingFor } from "../lib/shipping.js"
 import { publicVariants } from "../lib/variants.js"
 import { publicInquiryRoutes } from "./inquiries.js"
 import { publicFormRateLimit } from "../lib/rate-limits.js"
+import { attributionInput } from "../lib/attribution.js"
 
 const localeSchema = z.enum(["bs", "en"]).default("bs")
 
@@ -140,6 +141,7 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
         country: z.string().trim().min(2).max(80),
       }),
       notes: z.string().trim().max(2000).optional(),
+      attribution: attributionInput,
       items: z.array(
         z.object({
           productId: z.string().uuid(),
@@ -186,7 +188,7 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
       const [customer] = await tx.insert(customers).values(payload.customer).returning()
       const [order] = await tx.insert(orders).values({
         orderNumber, locale: payload.locale, customerId: customer.id,
-        shippingAddress: payload.shipping, notes: payload.notes, shippingAmountMinor, idempotencyKey,
+        shippingAddress: payload.shipping, notes: payload.notes, attribution: payload.attribution, shippingAmountMinor, idempotencyKey,
       }).returning()
       await tx.insert(orderItems).values(lines.map(line => ({
         orderId: order.id, productId: line.item.productId, variantId: line.variant?.id,

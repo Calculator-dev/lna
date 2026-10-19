@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { cartItem, productItem, track } from "@/lib/analytics"
 import { activeVariants, defaultShippingPolicy, shippingFor, type CatalogueOffer, type LocalizedProduct, type ShippingPolicy } from "@/lib/products"
 
 const STORAGE_KEY = "lna-cart-v2"
@@ -158,6 +159,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const selected = variants.find((variant) => variant.id === options?.variantId) ?? variants[0]
         const persistedVariantId = uuidPattern.test(selected.id) ? selected.id : undefined
         const lineId = `${product.id}:${selected.id}:${personalization ?? "base"}`
+        track.addToCart(productItem(product, selected, quantity))
         setItems((current) => {
           const existing = current.find((item) => item.lineId === lineId)
           if (existing) {
@@ -189,6 +191,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setOpen(true)
       },
       removeItem: (lineId) => {
+        const removed = items.find((item) => item.lineId === lineId)
+        if (removed) track.removeFromCart(cartItem(removed))
         setItems((current) => current.filter((item) => item.lineId !== lineId))
       },
       updateQuantity: (lineId, quantity) => {

@@ -157,3 +157,13 @@ test('cijene upisane u KM pretvaraju se u feninge', async () => {
   // Anything else is sent as invalid and rejected by the API rather than guessed.
   for (const invalid of ['', '45.505', '-1', 'abc']) assert.ok(Number.isNaN(toMinor(invalid)), invalid)
 })
+
+test('izvor posjete prikazuje kampanju ili direktnu posjetu', async () => {
+  const { AttributionCard } = await import('../src/components/attribution-card.tsx')
+  const { renderToString } = await import('react-dom/server')
+  const html = renderToString(<AttributionCard attribution={{ source: 'facebook', medium: 'paid_social', campaign: 'jesen-2026', fbclid: 'abc', landingPath: '/shop' }} />)
+  assert.match(html, /jesen-2026/)
+  assert.match(html, /facebook \/ paid_social/)
+  assert.match(html, /Meta/)
+  assert.match(renderToString(<AttributionCard attribution={null} />), /Direktna posjeta/)
+})

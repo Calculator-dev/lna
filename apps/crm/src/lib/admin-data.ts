@@ -142,6 +142,7 @@ export type AdminOrderDetail = {
     country: string;
   };
   notes: string | null;
+  attribution: Attribution | null;
   declineReason: string | null;
   reviewedAt: string | null;
   reviewedByEmail: string | null;
@@ -189,6 +190,21 @@ export type AdminInquiryDetail = AdminInquiry & {
   locale: "bs" | "en";
   phone: string | null;
   dimensions: string | null;
+  attribution: Attribution | null;
+};
+
+/** Campaign tags, ad click IDs and referrer the storefront recorded with an order or inquiry. */
+export type Attribution = {
+  source?: string;
+  medium?: string;
+  campaign?: string;
+  term?: string;
+  content?: string;
+  gclid?: string;
+  fbclid?: string;
+  referrer?: string;
+  landingPath?: string;
+  capturedAt?: string;
 };
 export function inquiryRows(inquiries: AdminInquiry[]) {
   return inquiries.map((inquiry) => ({

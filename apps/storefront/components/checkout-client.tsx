@@ -8,6 +8,9 @@ import { useTranslations } from "next-intl"
 import { useRef, useState } from "react"
 import { toast } from "sonner"
 import { useCart } from "@/components/cart-provider"
+import { useTrackOnce } from "@/hooks/use-track-once"
+import { currentAttribution } from "@/lib/attribution"
+import { cartItem, track } from "@/lib/analytics"
 import { formatPrice, OrderError, submitOrder, type Locale, isSvg } from "@/lib/products"
 
 export function CheckoutClient({ locale }: { locale: Locale }) {
@@ -21,6 +24,7 @@ export function CheckoutClient({ locale }: { locale: Locale }) {
   const cart = useTranslations("cart")
 
   const total = subtotal + shipping
+  useTrackOnce(items.length > 0, () => track.beginCheckout(items.map(cartItem)))
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -51,8 +55,10 @@ export function CheckoutClient({ locale }: { locale: Locale }) {
           quantity: item.quantity,
           personalization: item.personalization,
         })),
+        attribution: currentAttribution(),
       }, idempotencyKey.current)
 
+      track.purchase(response, items.map(cartItem))
       clear()
       const successBase = locale === "en" ? "/en/checkout/success" : "/checkout/success"
       router.push(`${successBase}?order=${encodeURIComponent(response.orderNumber)}`)

@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react"
 import { getInquiry } from "../lib/api"
 import { formatDateTime } from "../lib/format"
 import { Button } from "./ui/button"
+import { AttributionCard } from "./attribution-card"
 import { Card } from "./ui/card"
 
 const date = formatDateTime
@@ -38,6 +39,9 @@ export function InquiryDetails({ id, onBack }: { id: string; onBack: () => void 
           </dl>
           <a href={`mailto:${inquiry.email}`} className="mt-6 inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm text-primary-foreground">Odgovori emailom</a>
         </Card>
+        <div className="xl:col-start-2">
+          <AttributionCard attribution={inquiry.attribution} />
+        </div>
       </div>
     </div>
   )

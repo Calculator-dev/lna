@@ -48,6 +48,15 @@ test('orders use database prices, reject missing products, and report storage fa
     assert.equal(inserts.find(entry => entry.table === orders).values.shippingAmountMinor, 0)
     assert.equal(large.json().totalMinor, 18200)
 
+    // Campaign data is stored with the order; malformed campaign data is dropped, never fatal.
+    inserts = []
+    const campaign = { source: 'facebook', medium: 'paid_social', campaign: 'jesen-2026', fbclid: 'abc', capturedAt: '2026-10-19T10:00:00.000Z', extra: 'ignored' }
+    assert.equal((await app.inject({ method: 'POST', url: '/public/orders', payload: { ...payload, attribution: campaign } })).statusCode, 201)
+    assert.deepEqual(inserts.find(entry => entry.table === orders).values.attribution, { source: 'facebook', medium: 'paid_social', campaign: 'jesen-2026', fbclid: 'abc', capturedAt: '2026-10-19T10:00:00.000Z' })
+    inserts = []
+    assert.equal((await app.inject({ method: 'POST', url: '/public/orders', payload: { ...payload, attribution: { source: 'x'.repeat(5000) } } })).statusCode, 201)
+    assert.equal(inserts.find(entry => entry.table === orders).values.attribution, undefined)
+
     inserts = []
     const oversized = { ...payload, customer: { ...payload.customer, phone: '1'.repeat(61) } }
     assert.equal((await app.inject({ method: 'POST', url: '/public/orders', payload: oversized })).statusCode, 400)

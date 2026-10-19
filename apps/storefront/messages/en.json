@@ -25,7 +25,8 @@
     "custom": "Custom work | LNA kreativna sehara",
     "cart": "Your cart | LNA kreativna sehara",
     "checkout": "Checkout | LNA kreativna sehara",
-    "success": "Order received | LNA kreativna sehara"
+    "success": "Order received | LNA kreativna sehara",
+    "privacy": "Privacy and cookies | LNA kreativna sehara"
   },
   "notFound": {
     "title": "Page not found",
@@ -61,7 +62,8 @@
     "contact": "Contact",
     "location": "Sarajevo, Bosnia and Herzegovina",
     "languageNote": "English is available as a secondary storefront language.",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "privacy": "Privacy"
   },
   "home": {
     "hero": {
@@ -322,5 +324,36 @@
       "prepare": "We choose the materials and sketch the piece.",
       "finish": "We make it by hand, finish the details, and check each piece before dispatch."
     }
+  },
+  "consent": {
+    "title": "Cookies",
+    "text": "We use analytics and advertising cookies to understand visits and improve the shop. We only set them with your consent.",
+    "privacy": "More about privacy",
+    "accept": "Accept",
+    "decline": "Decline",
+    "settings": "Cookie settings"
+  },
+  "privacy": {
+    "eyebrow": "Privacy",
+    "title": "Privacy and cookies",
+    "description": "How we use the details you give us and data about visits to the shop.",
+    "sections": [
+      {
+        "title": "Orders and inquiries",
+        "body": "When you order or send an inquiry, we keep your name, email, phone, delivery address and notes. We use them only to handle your order or inquiry and to contact you about it."
+      },
+      {
+        "title": "Analytics and advertising",
+        "body": "With your consent we use Google Tag Manager and Google Analytics to see which pages and products interest visitors, and cookies to measure advertising. Without consent these cookies are not set. You can change your choice at any time through “Cookie settings” at the bottom of the page."
+      },
+      {
+        "title": "Where your visit came from",
+        "body": "With an order or inquiry we also record how you found us (for example a campaign name or the site you came from), so we know which campaigns are worthwhile. This is kept in your browser only if you accept cookies."
+      },
+      {
+        "title": "Your rights",
+        "body": "You can ask to see, correct or delete the data we hold about you. Write to info@lnakreativnasehara.ba."
+      }
+    ]
   }
 }
