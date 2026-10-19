@@ -46,7 +46,7 @@ Restart an app after changing its environment.
 In production:
 
 - Set `CORS_ORIGINS` to the storefront and CRM origins, comma-separated
-  (e.g. `https://lnakreativnasehara.ba,https://crm.lnakreativnasehara.ba`). Outside production it
+  (e.g. `https://lnasehara.com,https://crm.lnasehara.com`). Outside production it
   defaults to the localhost development ports. The API logs a warning at startup
   if it is missing in production.
 - Behind a reverse proxy or load balancer, set `TRUST_PROXY=true` (or the number

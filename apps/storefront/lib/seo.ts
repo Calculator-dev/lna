@@ -10,7 +10,7 @@ import {
 } from "@/lib/products"
 
 export function getBaseUrl() {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "https://lnakreativnasehara.example"
+  return process.env.NEXT_PUBLIC_SITE_URL ?? "https://lnasehara.com"
 }
 
 export function getAbsoluteUrl(path: string) {

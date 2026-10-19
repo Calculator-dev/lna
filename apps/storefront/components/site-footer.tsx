@@ -36,8 +36,8 @@ export function SiteFooter({ locale }: { locale: Locale }) {
         <div className="md:col-span-3">
           <p className="eyebrow text-honey">{t("contact")}</p>
           <div className="mt-5 space-y-3 text-sm text-linen/75">
-            <a href="mailto:info@lnakreativnasehara.ba" className="block w-fit hover:text-honey">info@lnakreativnasehara.ba</a>
-            <a href="tel:+38761000000" className="block w-fit hover:text-honey">+387 61 000 000</a>
+            <a href="mailto:info@lnasehara.com" className="block w-fit hover:text-honey">info@lnasehara.com</a>
+            <a href="tel:+38761518703" className="block w-fit hover:text-honey">+387 61 518 703</a>
             <p>{t("location")}</p>
           </div>
         </div>
