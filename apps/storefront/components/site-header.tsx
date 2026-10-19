@@ -55,7 +55,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             <Menu className="h-5 w-5" strokeWidth={1.6} />
           </button>
           <Link href={buildPath(locale)} aria-label={siteName} className="shrink-0 text-foreground">
-            <Wordmark />
+            <Wordmark priority />
           </Link>
 
           <nav className="mx-auto hidden items-center gap-1 xl:flex" aria-label={t("mainNavigation")}>

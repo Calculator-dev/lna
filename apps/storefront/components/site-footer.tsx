@@ -15,7 +15,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
       <span className="ornament block text-honey/70" aria-hidden />
       <div className="mx-auto grid max-w-375 gap-12 px-4 py-16 md:grid-cols-12 md:px-6 md:py-20">
         <div className="md:col-span-6">
-          <Wordmark size="lg" className="text-linen" />
+          <Wordmark size="lg" tone="light" alt="LNA kreativna sehara" />
           <p className="mt-6 max-w-lg text-sm leading-7 text-linen/65">
             {t("description")}
           </p>

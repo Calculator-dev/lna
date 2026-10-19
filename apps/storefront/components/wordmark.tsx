@@ -1,15 +1,26 @@
+import Image from "next/image"
+import logo from "@/public/logo.png"
+import logoLight from "@/public/logo-light.png"
 import { cn } from "@/lib/utils"
 
-/** "LNA" set large in the display serif, with "kreativna sehara" stacked beside it. */
-export function Wordmark({ className, size = "md" }: { className?: string; size?: "md" | "lg" }) {
+/**
+ * The LNA Sehara logo. `tone="light"` is the version for dark backgrounds (cream script,
+ * pink letters). Pass `alt` only where the logo isn't already inside a labelled link.
+ */
+export function Wordmark({ className, size = "md", tone = "dark", alt = "", priority = false }: {
+  className?: string
+  size?: "md" | "lg"
+  tone?: "dark" | "light"
+  alt?: string
+  priority?: boolean
+}) {
   return (
-    <span className={cn("inline-flex items-center gap-2.5 text-current", className)}>
-      <span className={cn("font-serif italic leading-none", size === "lg" ? "text-6xl md:text-7xl" : "text-[34px]")}>LNA</span>
-      <span className={cn("border-l border-current/30 pl-2.5 font-semibold uppercase leading-[1.15]", size === "lg" ? "text-xs tracking-[0.3em]" : "text-[9.5px] tracking-[0.26em]")}>
-        kreativna
-        <br />
-        sehara
-      </span>
-    </span>
+    <Image
+      src={tone === "light" ? logoLight : logo}
+      alt={alt}
+      priority={priority}
+      sizes={size === "lg" ? "220px" : "110px"}
+      className={cn("w-auto", size === "lg" ? "h-28 md:h-32" : "h-14 md:h-16", className)}
+    />
   )
 }
