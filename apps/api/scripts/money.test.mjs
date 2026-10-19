@@ -14,6 +14,6 @@ test('amounts in feninga format as KM, with decimals only when needed', () => {
 
 test('delivery is free from 150 KM, to the fening', () => {
   assert.equal(shippingFor(0), 0)
-  assert.equal(shippingFor(14999), 1000)
+  assert.equal(shippingFor(14999), 1100)
   assert.equal(shippingFor(15000), 0)
 })

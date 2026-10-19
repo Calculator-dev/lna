@@ -92,7 +92,7 @@ export type LocalizedProduct = Product & {
 export type ShippingPolicy = { freeFromMinor: number; feeMinor: number }
 
 /** Shown before the live policy loads; the API's GET /public/catalogue is authoritative. */
-export const defaultShippingPolicy: ShippingPolicy = { freeFromMinor: 150_00, feeMinor: 10_00 }
+export const defaultShippingPolicy: ShippingPolicy = { freeFromMinor: 150_00, feeMinor: 11_00 }
 
 export function shippingFor(subtotalMinor: number, policy: ShippingPolicy) {
   return subtotalMinor === 0 || subtotalMinor >= policy.freeFromMinor ? 0 : policy.feeMinor

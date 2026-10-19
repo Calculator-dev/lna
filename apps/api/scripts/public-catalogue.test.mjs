@@ -13,5 +13,5 @@ test('live catalogue serializes translations, categories and primary-first stabl
   assert.equal(product.media[0].url, '/public/media/primary')
   assert.equal(product.media[0].alt.en, 'Slika')
   assert.ok(!JSON.stringify(result).includes('private-secret'))
-  assert.deepEqual(catalogueResponse([], [], []), { shipping: { freeFromMinor: 15000, feeMinor: 1000 }, products: [], categories: [] })
+  assert.deepEqual(catalogueResponse([], [], []), { shipping: { freeFromMinor: 15000, feeMinor: 1100 }, products: [], categories: [] })
 })

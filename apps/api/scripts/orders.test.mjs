@@ -38,9 +38,9 @@ test('orders use database prices, reject missing products, and report storage fa
     assert.equal(line.productName, 'Test product')
     assert.equal(line.dimensions, '20 cm')
     // 2 × 45,50 = 91 KM is below the free-delivery threshold.
-    assert.equal(inserts.find(entry => entry.table === orders).values.shippingAmountMinor, 1000)
+    assert.equal(inserts.find(entry => entry.table === orders).values.shippingAmountMinor, 1100)
     assert.equal(response.json().subtotalMinor, 9100)
-    assert.equal(response.json().totalMinor, 10100)
+    assert.equal(response.json().totalMinor, 10200)
 
     inserts = []
     const large = await app.inject({ method: 'POST', url: '/public/orders', payload: { ...payload, items: [{ productId, quantity: 4 }] } })
