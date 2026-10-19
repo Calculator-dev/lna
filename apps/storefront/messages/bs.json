@@ -25,7 +25,8 @@
     "custom": "Custom izrada | LNA kreativna sehara",
     "cart": "Korpa | LNA kreativna sehara",
     "checkout": "Checkout | LNA kreativna sehara",
-    "success": "Narudžba zaprimljena | LNA kreativna sehara"
+    "success": "Narudžba zaprimljena | LNA kreativna sehara",
+    "privacy": "Privatnost i kolačići | LNA kreativna sehara"
   },
   "notFound": {
     "title": "Stranica nije pronađena",
@@ -61,7 +62,8 @@
     "contact": "Kontakt",
     "location": "Sarajevo, BiH",
     "languageNote": "Bosanski je primarni jezik webshopa.",
-    "backHome": "Nazad na početnu"
+    "backHome": "Nazad na početnu",
+    "privacy": "Privatnost"
   },
   "home": {
     "hero": {
@@ -322,5 +324,36 @@
       "prepare": "Biramo materijale i pripremamo skicu komada.",
       "finish": "Ručno izrađujemo, dorađujemo detalje i provjeravamo svaki komad prije slanja."
     }
+  },
+  "consent": {
+    "title": "Kolačići",
+    "text": "Koristimo kolačiće za analitiku i oglase kako bismo razumjeli posjete i poboljšali ponudu. Postavljamo ih samo uz vaš pristanak.",
+    "privacy": "Više o privatnosti",
+    "accept": "Prihvati",
+    "decline": "Odbij",
+    "settings": "Postavke kolačića"
+  },
+  "privacy": {
+    "eyebrow": "Privatnost",
+    "title": "Privatnost i kolačići",
+    "description": "Kako koristimo podatke koje nam date i podatke o posjetama webshopu.",
+    "sections": [
+      {
+        "title": "Narudžbe i upiti",
+        "body": "Kada naručite ili pošaljete upit, čuvamo ime, email, telefon, adresu za dostavu i vaše napomene. Koristimo ih samo da obradimo narudžbu ili upit i da vas kontaktiramo u vezi s njima."
+      },
+      {
+        "title": "Analitika i oglasi",
+        "body": "Uz vaš pristanak koristimo Google Tag Manager i Google Analytics kako bismo vidjeli koje stranice i proizvodi zanimaju posjetioce, te kolačiće za mjerenje oglasa. Bez pristanka se ovi kolačići ne postavljaju. Izbor možete promijeniti bilo kada putem linka „Postavke kolačića” u dnu stranice."
+      },
+      {
+        "title": "Izvor posjete",
+        "body": "Uz narudžbu ili upit bilježimo i kako ste došli do nas (npr. naziv kampanje ili stranicu s koje ste stigli), da bismo znali koje kampanje imaju smisla. Ovaj podatak čuvamo u vašem pregledniku samo uz pristanak na kolačiće."
+      },
+      {
+        "title": "Vaša prava",
+        "body": "Možete zatražiti uvid u podatke koje imamo o vama, njihovu ispravku ili brisanje. Pišite nam na info@lnakreativnasehara.ba."
+      }
+    ]
   }
 }

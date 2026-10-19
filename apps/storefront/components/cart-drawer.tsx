@@ -3,9 +3,11 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Minus, Plus, Trash2, X } from "lucide-react"
+import { useEffect } from "react"
 import { useTranslations } from "next-intl"
 import { useCart } from "@/components/cart-provider"
 import { useModalPanel } from "@/hooks/use-modal-panel"
+import { cartItem, track } from "@/lib/analytics"
 import { formatPrice, type Locale, isSvg } from "@/lib/products"
 import { cn } from "@/lib/utils"
 
@@ -14,6 +16,11 @@ export function CartDrawer({ locale }: { locale: Locale }) {
   const checkoutHref = locale === "en" ? "/en/checkout" : "/checkout"
   const cartHref = locale === "en" ? "/en/cart" : "/cart"
   const panel = useModalPanel<HTMLElement>(isOpen, () => setOpen(false))
+  useEffect(() => {
+    if (isOpen && items.length) track.viewCart(items.map(cartItem))
+    // Once per opening, not on every quantity change while it is open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen])
   const t = useTranslations("cart")
   const common = useTranslations("common")
 

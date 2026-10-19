@@ -2,12 +2,13 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { ChevronDown, Grid2X2, List, SlidersHorizontal, X } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useTranslations } from "next-intl"
 import { useModalPanel } from "@/hooks/use-modal-panel"
 import { ProductCard } from "@/components/product-card"
 import { materialStyle } from "@/lib/material-style"
-import { displayPrice, materials, type Locale, type LocalizedCategory, type LocalizedProduct, type Material, type ProductType } from "@/lib/products"
+import { productItem, track } from "@/lib/analytics"
+import { activeVariants, displayPrice, materials, type Locale, type LocalizedCategory, type LocalizedProduct, type Material, type ProductType } from "@/lib/products"
 import { cn } from "@/lib/utils"
 
 type SortKey = "featured" | "name-asc" | "price-asc" | "price-desc"
@@ -60,6 +61,13 @@ export function ShopClient({ locale, products, categories }: { locale: Locale; p
       return Number(b.featured) - Number(a.featured)
     })
   }, [categoryId, locale, material, productType, products, query, sort])
+
+  // One list view per filter or search result, not per render.
+  const listKey = filtered.map(product => product.id).join()
+  useEffect(() => {
+    track.viewItemList("shop", filtered.map(product => productItem(product, activeVariants(product)[0]!)))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listKey])
 
   const countByMaterial = (value: Material) => products.filter((product) => product.material === value).length
   const countByType = (value: ProductType) => products.filter((product) => product.type === value).length

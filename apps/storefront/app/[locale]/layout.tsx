@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next"
 import { Bricolage_Grotesque, Instrument_Serif } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
 import { NextIntlClientProvider } from "next-intl"
+import { AttributionTracker } from "@/components/analytics/attribution-tracker"
+import { ConsentBanner } from "@/components/analytics/consent-banner"
+import { ConsentDefaults, GoogleTagManager } from "@/components/analytics/google-tag-manager"
 import { CartProvider } from "@/components/cart-provider"
 import { SiteShell } from "@/components/site-shell"
 import { Toaster } from "@/components/ui/sonner"
@@ -51,14 +53,19 @@ export default async function RootLayout({
   const locale = await resolveLocale(params)
   return (
     <html lang={locale} data-scroll-behavior="smooth" className={`${bricolage.variable} ${instrument.variable}`}>
+      <head>
+        <ConsentDefaults />
+      </head>
       <body suppressHydrationWarning className="min-h-screen bg-background font-sans antialiased">
         <NextIntlClientProvider>
           <CartProvider>
             <SiteShell locale={locale}>{children}</SiteShell>
             <Toaster position="top-center" />
           </CartProvider>
+          <ConsentBanner locale={locale} />
         </NextIntlClientProvider>
-        {process.env.NODE_ENV === "production" && <Analytics />}
+        <AttributionTracker />
+        <GoogleTagManager />
       </body>
     </html>
   )

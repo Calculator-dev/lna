@@ -25,6 +25,11 @@ test('inquiries are validated, saved, and only listed for admins', async () => {
     assert.equal(saved.fullName, 'Lejla H.')
     assert.equal(saved.phone, undefined)
     assert.equal(saved.deadline, 'June')
+    assert.equal(saved.attribution, undefined)
+
+    const withSource = await app.inject({ method: 'POST', url: '/public/inquiries', payload: { ...payload, attribution: { source: 'google', medium: 'cpc', gclid: 'xyz' } } })
+    assert.equal(withSource.statusCode, 201)
+    assert.deepEqual(saved.attribution, { source: 'google', medium: 'cpc', gclid: 'xyz' })
 
     saved = undefined
     assert.equal((await app.inject({ method: 'POST', url: '/public/inquiries', payload: { ...payload, brief: 'short' } })).statusCode, 400)

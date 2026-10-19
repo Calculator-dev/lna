@@ -1,3 +1,5 @@
+import type { Attribution } from "@/lib/attribution"
+
 export type Locale = "bs" | "en"
 
 export type LocalizedField = Record<Locale, string>
@@ -90,7 +92,7 @@ export type LocalizedProduct = Product & {
 export type ShippingPolicy = { freeFromMinor: number; feeMinor: number }
 
 /** Shown before the live policy loads; the API's GET /public/catalogue is authoritative. */
-export const defaultShippingPolicy: ShippingPolicy = { freeFromMinor: 150_00, feeMinor: 10_00 }
+export const defaultShippingPolicy: ShippingPolicy = { freeFromMinor: 150_00, feeMinor: 11_00 }
 
 export function shippingFor(subtotalMinor: number, policy: ShippingPolicy) {
   return subtotalMinor === 0 || subtotalMinor >= policy.freeFromMinor ? 0 : policy.feeMinor
@@ -175,10 +177,17 @@ export function localizeProduct(product: Product, locale: Locale): LocalizedProd
   }
 }
 
-/** "1.234 KM" / "12,50 KM" in Bosnian, "BAM 1,234" / "BAM 12.50" in English, from feninga. */
+/**
+ * "1.234 KM" / "12,50 KM" in Bosnian, "BAM 1,234" / "BAM 12.50" in English, from feninga.
+ * Built by hand rather than with Intl: browsers without Bosnian locale data would format
+ * differently from the server and break hydration.
+ */
 export function formatPrice(minor: number, locale: Locale) {
-  const fraction = minor % 100 === 0 ? 0 : 2
-  const value = new Intl.NumberFormat(locale === "bs" ? "bs-BA" : "en-GB", { minimumFractionDigits: fraction, maximumFractionDigits: fraction }).format(minor / 100)
+  const [thousands, decimal] = locale === "bs" ? [".", ","] : [",", "."]
+  const absolute = Math.abs(Math.round(minor))
+  const whole = String(Math.floor(absolute / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, thousands)
+  const fening = absolute % 100
+  const value = `${minor < 0 ? "-" : ""}${whole}${fening ? `${decimal}${String(fening).padStart(2, "0")}` : ""}`
   return locale === "bs" ? `${value} KM` : `BAM ${value}`
 }
 
@@ -199,6 +208,7 @@ export type CheckoutLineItem = {
 
 export type OrderPayload = {
   locale: Locale
+  attribution?: Attribution
   customer: {
     fullName: string
     email: string
@@ -251,6 +261,7 @@ export async function submitOrder(payload: OrderPayload, idempotencyKey: string)
 
 export type InquiryPayload = {
   locale: Locale
+  attribution?: Attribution
   fullName: string
   email: string
   phone?: string

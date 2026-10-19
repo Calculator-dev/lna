@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { ConsentSettingsLink } from "@/components/analytics/consent-banner"
 import { ArrowUpRight } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { Wordmark } from "@/components/wordmark"
@@ -49,7 +50,11 @@ export function SiteFooter({ locale }: { locale: Locale }) {
       <div className="border-t border-linen/12">
         <div className="mx-auto flex max-w-375 flex-col gap-3 px-4 py-5 text-xs text-linen/50 md:flex-row md:items-center md:justify-between md:px-6">
           <p>{t("languageNote")}</p>
-          <Link href={buildPath(locale)} className="hover:text-honey">{t("backHome")}</Link>
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            <Link href={buildPath(locale, "/privacy")} className="hover:text-honey">{t("privacy")}</Link>
+            <ConsentSettingsLink className="hover:text-honey" />
+            <Link href={buildPath(locale)} className="hover:text-honey">{t("backHome")}</Link>
+          </div>
         </div>
       </div>
     </footer>

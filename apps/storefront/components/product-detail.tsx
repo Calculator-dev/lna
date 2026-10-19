@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useTranslations } from "next-intl"
 import { Check, Minus, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { useCart } from "@/components/cart-provider"
 import { materialStyle } from "@/lib/material-style"
+import { productItem, track } from "@/lib/analytics"
 import { activeVariants, formatPrice, type Locale, type LocalizedProduct } from "@/lib/products"
 import { cn } from "@/lib/utils"
 
@@ -19,6 +20,10 @@ export function ProductDetail({ locale, product }: { locale: Locale; product: Lo
   const t = useTranslations("product")
   const common = useTranslations("common")
   const materialName = common(`materials.${product.material}`)
+
+  useEffect(() => {
+    track.viewItem(productItem(product, activeVariants(product)[0]!))
+  }, [product])
 
   const handleAdd = () => {
     addItem(product, { quantity, personalization: personalization.trim() || undefined, variantId: selectedVariant.id })

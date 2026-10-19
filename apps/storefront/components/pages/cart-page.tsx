@@ -5,10 +5,13 @@ import Link from "next/link"
 import { Minus, Plus, Trash2 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { useCart } from "@/components/cart-provider"
+import { useTrackOnce } from "@/hooks/use-track-once"
+import { cartItem, track } from "@/lib/analytics"
 import { formatPrice, type Locale, isSvg } from "@/lib/products"
 
 export function CartPage({ locale }: { locale: Locale }) {
   const { items, subtotalMinor, updateQuantity, removeItem, totalItems } = useCart()
+  useTrackOnce(items.length > 0, () => track.viewCart(items.map(cartItem)))
   const shopHref = locale === "en" ? "/en/shop" : "/shop"
   const checkoutHref = locale === "en" ? "/en/checkout" : "/checkout"
   const productPrefix = locale === "en" ? "/en/product" : "/product"

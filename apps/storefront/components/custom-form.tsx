@@ -4,6 +4,8 @@ import type React from "react"
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
+import { track } from "@/lib/analytics"
+import { currentAttribution } from "@/lib/attribution"
 import { submitInquiry, type Locale } from "@/lib/products"
 
 export function CustomForm({ locale }: { locale: Locale }) {
@@ -26,7 +28,9 @@ export function CustomForm({ locale }: { locale: Locale }) {
         brief: text("brief"),
         dimensions: text("dimensions"),
         deadline: text("deadline"),
+        attribution: currentAttribution(),
       })
+      track.generateLead()
       toast.success(t("success"))
       form.reset()
     } catch {

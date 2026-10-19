@@ -5,6 +5,7 @@ import { db } from "../db/client.js"
 import { inquiries } from "../db/schema.js"
 import { queueEmail, wakeEmailWorker } from "../services/email-outbox.js"
 import { publicFormRateLimit } from "../lib/rate-limits.js"
+import { attributionInput } from "../lib/attribution.js"
 import { beforeCursor, cursorTime, page, pageQuery } from "../lib/pagination.js"
 
 const optionalText = (max: number) => z.string().trim().max(max).optional().transform(value => value || undefined)
@@ -18,6 +19,7 @@ export const inquiryInput = z.object({
   brief: z.string().trim().min(10).max(5000),
   dimensions: optionalText(300),
   deadline: optionalText(120),
+  attribution: attributionInput,
 })
 
 export const publicInquiryRoutes: FastifyPluginAsync = async app => {

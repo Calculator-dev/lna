@@ -28,6 +28,7 @@ export type InquiryNotification = {
   brief: string
   dimensions?: string
   deadline?: string
+  attribution?: { source?: string; medium?: string; campaign?: string }
 }
 
 export type EmailResult = { sent: true } | { sent: false; reason: "not_configured" | "delivery_failed" }
@@ -98,6 +99,7 @@ export async function sendInquiryNotification(input: InquiryNotification): Promi
   const rows = [
     ["Ime", input.fullName], ["Email", input.email], ["Telefon", input.phone], ["Dimenzije / količina", input.dimensions],
     ["Željeni rok", input.deadline], ["Jezik", input.locale.toUpperCase()],
+    ["Izvor", [input.attribution?.campaign, [input.attribution?.source, input.attribution?.medium].filter(Boolean).join(" / ")].filter(Boolean).join(" · ")],
   ].filter((row): row is [string, string] => Boolean(row[1]))
     .map(([label, value]) => `<tr><td style="padding:6px 12px 6px 0;color:#666">${label}</td><td style="padding:6px 0">${escapeHtml(value)}</td></tr>`).join("")
   const html = `<div style="font-family:Arial,sans-serif;max-width:620px;color:#222">

@@ -42,7 +42,7 @@ export const orderReviewRoutes: FastifyPluginAsync = async app => {
       .select({
         id: orders.id, orderNumber: orders.orderNumber, locale: orders.locale,
         status: orders.status, paymentStatus: orders.paymentStatus,
-        shippingAddress: orders.shippingAddress, notes: orders.notes,
+        shippingAddress: orders.shippingAddress, notes: orders.notes, attribution: orders.attribution,
         shippingAmountMinor: orders.shippingAmountMinor,
         declineReason: orders.declineReason, reviewedAt: orders.reviewedAt, reviewedByEmail: orders.reviewedByEmail,
         reviewEmailSentAt: orders.reviewEmailSentAt, confirmationEmailSentAt: orders.confirmationEmailSentAt,

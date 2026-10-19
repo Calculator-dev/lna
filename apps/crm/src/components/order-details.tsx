@@ -5,6 +5,7 @@ import { decideOrder, getOrder } from "../lib/api"
 import { localizedOrderStatus } from "../lib/admin-data"
 import { formatDateTime, formatMoney } from "../lib/format"
 import { Button } from "./ui/button"
+import { AttributionCard } from "./attribution-card"
 import { Card } from "./ui/card"
 
 const money = formatMoney
@@ -84,6 +85,7 @@ export function OrderDetails({ id, onBack }: { id: string; onBack: () => void })
         <div className="space-y-6">
           <Card className="p-6"><h3 className="font-serif text-2xl">Kupac</h3><dl className="mt-5 space-y-3 text-sm"><Detail label="Ime" value={order.customer.fullName} /><Detail label="Email" value={order.customer.email} /><Detail label="Telefon" value={order.customer.phone || "Nije navedeno"} /><Detail label="Potvrda narudžbe" value={order.confirmationEmailSentAt ? `Poslana ${date(order.confirmationEmailSentAt)}` : "Email nije poslan"} /></dl></Card>
           <Card className="p-6"><h3 className="font-serif text-2xl">Dostava</h3><p className="mt-5 text-sm leading-7">{order.shippingAddress.address}<br />{[order.shippingAddress.postalCode, order.shippingAddress.city].filter(Boolean).join(" ")}<br />{order.shippingAddress.country}</p>{order.notes && <><p className="mt-5 text-xs uppercase tracking-[0.18em] text-muted-foreground">Napomena</p><p className="mt-2 text-sm leading-6">{order.notes}</p></>}</Card>
+          <AttributionCard attribution={order.attribution} />
         </div>
       </div>
 

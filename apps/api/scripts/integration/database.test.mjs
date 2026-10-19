@@ -105,8 +105,8 @@ test('checkout prices from the database, stores a snapshot, and is idempotent', 
     const headers = { 'idempotency-key': 'integration-key-0001' }
     const first = await app.inject({ method: 'POST', url: '/public/orders', payload: order, headers })
     assert.equal(first.statusCode, 201)
-    // 80,50 KM plus 10 KM delivery.
-    assert.equal(first.json().totalMinor, 9050)
+    // 80,50 KM plus 11 KM delivery.
+    assert.equal(first.json().totalMinor, 9150)
     const retried = await app.inject({ method: 'POST', url: '/public/orders', payload: order, headers })
     assert.equal(retried.statusCode, 200)
     assert.equal(retried.json().orderNumber, first.json().orderNumber)
@@ -128,7 +128,7 @@ test('checkout prices from the database, stores a snapshot, and is idempotent', 
     const [summary] = await orderSummaries().limit(1)
     const detail = (await admin.inject(`/orders/${summary.id}`)).json()
     assert.equal(detail.items[0].name, 'Renamed sign')
-    assert.equal(detail.amountMinor, 9050)
+    assert.equal(detail.amountMinor, 9150)
   } finally {
     await admin.close()
   }
@@ -139,7 +139,7 @@ test('orders are reviewed once, by a recorded admin', async () => {
   try {
     const summaries = await orderSummaries()
     assert.equal(summaries.length, 2)
-    assert.ok(summaries.every(summary => summary.amountMinor === 9050 && summary.customer === customer.fullName))
+    assert.ok(summaries.every(summary => summary.amountMinor === 9150 && summary.customer === customer.fullName))
 
     const url = `/orders/${summaries[0].id}/decision`
     const accepted = await admin.inject({ method: 'PUT', url, payload: { decision: 'accept' } })

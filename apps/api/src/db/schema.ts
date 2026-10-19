@@ -11,6 +11,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import type { Attribution } from "../lib/attribution.js";
 
 export const localeEnum = pgEnum("locale", ["bs", "en"]);
 export const materialEnum = pgEnum("material", [
@@ -161,6 +162,8 @@ export const orders = pgTable("orders", {
     }>()
     .notNull(),
   notes: text("notes"),
+  // Campaign or referrer the customer arrived from (see lib/attribution.ts).
+  attribution: jsonb("attribution").$type<Attribution>(),
   shippingAmountMinor: integer("shipping_amount_minor").notNull(),
   declineReason: text("decline_reason"),
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
@@ -206,6 +209,7 @@ export const inquiries = pgTable("inquiries", {
   brief: text("brief").notNull(),
   dimensions: text("dimensions"),
   deadline: text("deadline"),
+  attribution: jsonb("attribution").$type<Attribution>(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

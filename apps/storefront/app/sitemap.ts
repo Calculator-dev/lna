@@ -8,10 +8,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/about",
     "/shop",
     "/custom",
+    "/privacy",
     "/en",
     "/en/about",
     "/en/shop",
     "/en/custom",
+    "/en/privacy",
   ]
 
   const [bs, en] = await Promise.all([getProducts("bs"), getProducts("en")])
