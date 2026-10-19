@@ -71,14 +71,14 @@ export function VariantEditor({ variants, onChange, mainDimensions }: {
                   onChange={index === 0 ? undefined : event => update(variant.key, { dimensions: event.target.value })}
                 />
               </Field>
-              <Field label="Cijena (KM) *" hint="Cijene su u cijelim KM.">
+              <Field label="Cijena (KM) *" hint="Npr. 45 ili 45,50.">
                 <Input
                   required
                   type="number"
                   min={0}
                   max={1000000}
-                  step={1}
-                  placeholder="45"
+                  step={0.01}
+                  placeholder="45,50"
                   value={variant.price}
                   onChange={event => update(variant.key, { price: event.target.value })}
                 />

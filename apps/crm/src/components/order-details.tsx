@@ -70,14 +70,14 @@ export function OrderDetails({ id, onBack }: { id: string; onBack: () => void })
               <thead className="text-muted-foreground"><tr><th className="pb-3 font-medium">Proizvod</th><th className="pb-3 font-medium">Količina</th><th className="pb-3 text-right font-medium">Cijena</th><th className="pb-3 text-right font-medium">Ukupno</th></tr></thead>
               <tbody>{order.items.map(item => <tr key={item.id} className="border-t border-border">
                 <td className="py-4"><p className="font-medium">{item.name}</p><p className="mt-1 text-xs text-muted-foreground">{[item.sku, item.dimensions].filter(Boolean).join(" · ")}</p>{item.personalization && <p className="mt-2 text-xs">Personalizacija: {item.personalization}</p>}</td>
-                <td className="py-4">{item.quantity}</td><td className="py-4 text-right">{money(item.unitPrice)}</td><td className="py-4 text-right font-medium">{money(item.unitPrice * item.quantity)}</td>
+                <td className="py-4">{item.quantity}</td><td className="py-4 text-right">{money(item.unitPriceMinor)}</td><td className="py-4 text-right font-medium">{money(item.unitPriceMinor * item.quantity)}</td>
               </tr>)}</tbody>
             </table>
           </div>
           <dl className="ml-auto max-w-xs space-y-2 border-t border-border pt-5 text-sm">
-            <div className="flex justify-between gap-6"><dt className="text-muted-foreground">Proizvodi</dt><dd>{money(order.subtotal)}</dd></div>
-            <div className="flex justify-between gap-6"><dt className="text-muted-foreground">Dostava</dt><dd>{order.shippingAmount === 0 ? "Besplatna" : money(order.shippingAmount)}</dd></div>
-            <div className="flex items-baseline justify-between gap-6"><dt className="text-muted-foreground">Ukupno</dt><dd className="font-serif text-3xl">{money(order.amount)}</dd></div>
+            <div className="flex justify-between gap-6"><dt className="text-muted-foreground">Proizvodi</dt><dd>{money(order.subtotalMinor)}</dd></div>
+            <div className="flex justify-between gap-6"><dt className="text-muted-foreground">Dostava</dt><dd>{order.shippingAmountMinor === 0 ? "Besplatna" : money(order.shippingAmountMinor)}</dd></div>
+            <div className="flex items-baseline justify-between gap-6"><dt className="text-muted-foreground">Ukupno</dt><dd className="font-serif text-3xl">{money(order.amountMinor)}</dd></div>
           </dl>
         </Card>
 

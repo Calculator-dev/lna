@@ -8,7 +8,7 @@ import { useCart } from "@/components/cart-provider"
 import { formatPrice, type Locale, isSvg } from "@/lib/products"
 
 export function CartPage({ locale }: { locale: Locale }) {
-  const { items, subtotal, updateQuantity, removeItem, totalItems } = useCart()
+  const { items, subtotalMinor, updateQuantity, removeItem, totalItems } = useCart()
   const shopHref = locale === "en" ? "/en/shop" : "/shop"
   const checkoutHref = locale === "en" ? "/en/checkout" : "/checkout"
   const productPrefix = locale === "en" ? "/en/product" : "/product"
@@ -62,7 +62,7 @@ export function CartPage({ locale }: { locale: Locale }) {
                     <Link href={`${productPrefix}/${item.slug}`} className="font-serif text-xl leading-tight text-foreground transition-opacity hover:opacity-60 sm:text-2xl">
                       {item.name}
                     </Link>
-                    <p className="mt-2 text-sm text-muted-foreground">{formatPrice(item.price, locale)}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{formatPrice(item.priceMinor, locale)}</p>
                     {item.dimensions && <p className="mt-2 text-xs text-muted-foreground">{t("dimensions", { dimensions: item.dimensions })}</p>}
                     {item.variantSku && <p className="mt-1 text-xs text-muted-foreground">SKU: {item.variantSku}</p>}
                     {item.personalization && <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.personalization}</p>}
@@ -73,7 +73,7 @@ export function CartPage({ locale }: { locale: Locale }) {
                         <Trash2 className="h-4 w-4" strokeWidth={1.5} />
                       </button>
                     </div>
-                    <p className="mt-4 text-right font-medium md:hidden">{formatPrice(item.price * item.quantity, locale)}</p>
+                    <p className="mt-4 text-right font-medium md:hidden">{formatPrice(item.priceMinor * item.quantity, locale)}</p>
                   </div>
 
                   <div className="hidden md:block">
@@ -82,7 +82,7 @@ export function CartPage({ locale }: { locale: Locale }) {
                       {t("removeButton")}
                     </button>
                   </div>
-                  <p className="hidden text-right font-medium md:block">{formatPrice(item.price * item.quantity, locale)}</p>
+                  <p className="hidden text-right font-medium md:block">{formatPrice(item.priceMinor * item.quantity, locale)}</p>
                 </li>
               ))}
             </ul>
@@ -92,7 +92,7 @@ export function CartPage({ locale }: { locale: Locale }) {
             <h2 className="font-serif text-3xl">{t("summaryTitle")}</h2>
             <div className="mt-7 flex items-baseline justify-between border-b border-primary-foreground/20 pb-5 text-sm">
               <span className="text-primary-foreground/70">{t("subtotal")}</span>
-              <span className="font-serif text-4xl text-honey">{formatPrice(subtotal, locale)}</span>
+              <span className="font-serif text-4xl text-honey">{formatPrice(subtotalMinor, locale)}</span>
             </div>
             <p className="py-5 text-xs leading-6 text-primary-foreground/70">
               {t("shippingNote")}

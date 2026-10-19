@@ -5,7 +5,7 @@ export type AdminOrder = {
   orderNumber: string;
   customer: string;
   status: string;
-  amount: number;
+  amountMinor: number;
   createdAt: string;
 };
 export type AdminDashboard = {
@@ -22,7 +22,7 @@ export type AdminProduct = {
   id?: string;
   sku: string;
   type: string;
-  price: number;
+  priceMinor: number;
   translations: Record<string, { name: string }>;
   /** Main product image for list thumbnails; null when none has been uploaded. */
   primaryImage?: { url: string; alt: { bs?: string; en?: string } } | null;
@@ -48,10 +48,10 @@ const orderStatuses: Record<string, string> = {
 const orderStatus = (status: string) =>
   orderStatuses[status.toLowerCase()] ?? status;
 export function orderRows(orders: AdminOrder[]) {
-  return orders.map((order) => ({
+  return orders.map(({ amountMinor, ...order }) => ({
     ...order,
     status: orderStatus(order.status),
-    amount: formatMoney(order.amount),
+    amount: formatMoney(amountMinor),
     createdAt: formatDate(order.createdAt),
   }));
 }
@@ -80,7 +80,7 @@ export function productRows(products: AdminProduct[]) {
       product.translations.en?.name ??
       product.sku,
     type: productType(product.type),
-    price: formatMoney(product.price),
+    price: formatMoney(product.priceMinor),
     image: product.primaryImage?.url ?? "",
     imageAlt: product.primaryImage?.alt.bs ?? "",
   }));
@@ -114,7 +114,7 @@ export type ProductVariant = {
   id: string;
   sku: string;
   dimensions: string;
-  price: number;
+  priceMinor: number;
   active?: boolean;
   isDefault?: boolean;
 };
@@ -148,9 +148,9 @@ export type AdminOrderDetail = {
   reviewEmailSentAt: string | null;
   confirmationEmailSentAt: string | null;
   createdAt: string;
-  subtotal: number;
-  shippingAmount: number;
-  amount: number;
+  subtotalMinor: number;
+  shippingAmountMinor: number;
+  amountMinor: number;
   items: Array<{
     id: string;
     productId: string;
@@ -159,7 +159,7 @@ export type AdminOrderDetail = {
     name: string;
     dimensions: string | null;
     quantity: number;
-    unitPrice: number;
+    unitPriceMinor: number;
     personalization: string | null;
   }>;
 };

@@ -69,7 +69,7 @@ export function ProductCard({
         <p className={cn("mt-2 text-sm leading-6 text-muted-foreground", !list && "line-clamp-2")}>{product.localizedShortDescription}</p>
         <div className="mt-auto flex items-end justify-between gap-3 pt-5">
           <p className="text-lg font-semibold tracking-tight">
-            {price.from ? common("from", { price: formatPrice(price.amount, locale) }) : formatPrice(price.amount, locale)}
+            {price.from ? common("from", { price: formatPrice(price.amountMinor, locale) }) : formatPrice(price.amountMinor, locale)}
           </p>
           <p className={cn("inline-flex items-center gap-1.5 text-right text-xs", product.type === "custom" ? "text-primary" : "text-muted-foreground")}>
             {product.type === "custom" && <PenLine className="h-3.5 w-3.5 shrink-0" aria-hidden />}

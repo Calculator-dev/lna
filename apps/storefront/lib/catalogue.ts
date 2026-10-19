@@ -26,7 +26,7 @@ export async function getCartOffers(): Promise<{ offers: CatalogueOffer[]; shipp
     shipping,
     offers: products.map(product => ({
       productId: product.id,
-      variants: activeVariants(product).map(({ id, sku, dimensions, price, isDefault }) => ({ id, sku, dimensions, price, isDefault })),
+      variants: activeVariants(product).map(({ id, sku, dimensions, priceMinor, isDefault }) => ({ id, sku, dimensions, priceMinor, isDefault })),
     })),
   }
 }

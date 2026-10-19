@@ -38,9 +38,21 @@ export async function queueEmail(tx: Transaction, email: QueuedEmail): Promise<Q
   return { queued: true }
 }
 
+// Confirmations queued by the release before prices moved to feninga carry whole KM.
+// Remove once no such email can still be waiting (they are given up on after about four hours).
+type LegacyConfirmation = Omit<ConfirmationEmail, "items" | "shippingAmountMinor"> & {
+  items: Array<{ name: string; quantity: number; unitPrice: number }>
+  shippingAmount: number
+}
+function inFeninga(payload: ConfirmationEmail | LegacyConfirmation): ConfirmationEmail {
+  if (!("shippingAmount" in payload)) return payload
+  const { shippingAmount, items, ...rest } = payload
+  return { ...rest, shippingAmountMinor: shippingAmount * 100, items: items.map(({ unitPrice, ...item }) => ({ ...item, unitPriceMinor: unitPrice * 100 })) }
+}
+
 function send(email: QueuedEmail): Promise<EmailResult> {
   switch (email.kind) {
-    case "order_confirmation": return sendOrderConfirmationEmail(email.payload)
+    case "order_confirmation": return sendOrderConfirmationEmail(inFeninga(email.payload))
     case "order_decision": return sendOrderDecisionEmail(email.payload)
     case "inquiry_notification": return sendInquiryNotification(email.payload)
   }

@@ -13,7 +13,8 @@ export type ProductVariant = {
   id: string
   sku: string
   dimensions: string
-  price: number
+  /** Feninga (1/100 KM), like every amount from the API. */
+  priceMinor: number
   isDefault?: boolean
   active?: boolean
 }
@@ -48,7 +49,7 @@ export type Product = {
   type: ProductType
   featured: boolean
   customizable: boolean
-  price: number
+  priceMinor: number
   currency: "BAM"
   material: Material
   dimensions: string
@@ -86,37 +87,37 @@ export type LocalizedProduct = Product & {
   primaryImage: MediaAsset
 }
 
-export type ShippingPolicy = { freeFrom: number; fee: number }
+export type ShippingPolicy = { freeFromMinor: number; feeMinor: number }
 
 /** Shown before the live policy loads; the API's GET /public/catalogue is authoritative. */
-export const defaultShippingPolicy: ShippingPolicy = { freeFrom: 150, fee: 10 }
+export const defaultShippingPolicy: ShippingPolicy = { freeFromMinor: 150_00, feeMinor: 10_00 }
 
-export function shippingFor(subtotal: number, policy: ShippingPolicy) {
-  return subtotal === 0 || subtotal >= policy.freeFrom ? 0 : policy.fee
+export function shippingFor(subtotalMinor: number, policy: ShippingPolicy) {
+  return subtotalMinor === 0 || subtotalMinor >= policy.freeFromMinor ? 0 : policy.feeMinor
 }
 
 /** Live price data for cart repricing: active variants per product, cheapest first. */
 export type CatalogueOffer = {
   productId: string
-  variants: Array<Pick<ProductVariant, "id" | "sku" | "dimensions" | "price" | "isDefault">>
+  variants: Array<Pick<ProductVariant, "id" | "sku" | "dimensions" | "priceMinor" | "isDefault">>
 }
 
 /**
  * Variants a customer can order, cheapest first, so the lowest price is listed and
  * preselected. Equal prices keep the default variant first, then the CRM order.
  */
-export function activeVariants(product: Product): Array<Pick<ProductVariant, "id" | "sku" | "dimensions" | "price" | "isDefault">> {
+export function activeVariants(product: Product): Array<Pick<ProductVariant, "id" | "sku" | "dimensions" | "priceMinor" | "isDefault">> {
   const active = product.variants?.filter(variant => variant.active !== false) ?? []
-  if (!active.length) return [{ id: `${product.id}-default`, sku: product.sku, dimensions: product.dimensions, price: product.price, isDefault: true }]
-  return [...active].sort((a, b) => a.price - b.price || Number(Boolean(b.isDefault)) - Number(Boolean(a.isDefault)))
+  if (!active.length) return [{ id: `${product.id}-default`, sku: product.sku, dimensions: product.dimensions, priceMinor: product.priceMinor, isDefault: true }]
+  return [...active].sort((a, b) => a.priceMinor - b.priceMinor || Number(Boolean(b.isDefault)) - Number(Boolean(a.isDefault)))
 }
 
 /** Lowest variant price; "From" is shown when the product's sizes cost different amounts. */
 export function displayPrice(product: Product) {
   const variants = activeVariants(product)
-  const prices = variants.map(variant => variant.price)
-  const amount = Math.min(...prices)
-  return { amount, from: new Set(prices).size > 1 }
+  const prices = variants.map(variant => variant.priceMinor)
+  const amountMinor = Math.min(...prices)
+  return { amountMinor, from: new Set(prices).size > 1 }
 }
 
 export const locales: Locale[] = ["bs", "en"]
@@ -174,11 +175,10 @@ export function localizeProduct(product: Product, locale: Locale): LocalizedProd
   }
 }
 
-export function formatPrice(amount: number, locale: Locale) {
-  const rounded = Math.round(amount)
-  const separator = locale === "bs" ? "." : ","
-  const digits = String(Math.abs(rounded)).replace(/\B(?=(\d{3})+(?!\d))/g, separator)
-  const value = `${rounded < 0 ? "-" : ""}${digits}`
+/** "1.234 KM" / "12,50 KM" in Bosnian, "BAM 1,234" / "BAM 12.50" in English, from feninga. */
+export function formatPrice(minor: number, locale: Locale) {
+  const fraction = minor % 100 === 0 ? 0 : 2
+  const value = new Intl.NumberFormat(locale === "bs" ? "bs-BA" : "en-GB", { minimumFractionDigits: fraction, maximumFractionDigits: fraction }).format(minor / 100)
   return locale === "bs" ? `${value} KM` : `BAM ${value}`
 }
 
@@ -216,9 +216,9 @@ export type OrderPayload = {
 
 export type OrderResponse = {
   orderNumber: string
-  subtotal: number
-  shippingAmount: number
-  total: number
+  subtotalMinor: number
+  shippingAmountMinor: number
+  totalMinor: number
 }
 
 export class OrderError extends Error {

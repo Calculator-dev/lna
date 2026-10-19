@@ -55,8 +55,8 @@ export function ShopClient({ locale, products, categories }: { locale: Locale; p
 
     return [...result].sort((a, b) => {
       if (sort === "name-asc") return a.localizedName.localeCompare(b.localizedName, locale)
-      if (sort === "price-asc") return displayPrice(a).amount - displayPrice(b).amount
-      if (sort === "price-desc") return displayPrice(b).amount - displayPrice(a).amount
+      if (sort === "price-asc") return displayPrice(a).amountMinor - displayPrice(b).amountMinor
+      if (sort === "price-desc") return displayPrice(b).amountMinor - displayPrice(a).amountMinor
       return Number(b.featured) - Number(a.featured)
     })
   }, [categoryId, locale, material, productType, products, query, sort])

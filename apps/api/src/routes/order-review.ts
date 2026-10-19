@@ -11,14 +11,14 @@ const decisionInput = z.discriminatedUnion("decision", [
   z.object({ decision: z.literal("accept") }),
   z.object({ decision: z.literal("decline"), reason: z.string().trim().min(5).max(2000) }),
 ])
-const totalAmount = sql<number>`coalesce(sum(${orderItems.unitPrice} * ${orderItems.quantity}), 0) + ${orders.shippingAmount}`.mapWith(Number)
+const totalMinor = sql<number>`coalesce(sum(${orderItems.unitPriceMinor} * ${orderItems.quantity}), 0) + ${orders.shippingAmountMinor}`.mapWith(Number)
 
 /** Newest first; `before` is a page cursor from a previous page. */
 export function orderSummaries(before?: string) {
   return db
     .select({
       id: orders.id, orderNumber: orders.orderNumber, customer: customers.fullName,
-      status: orders.status, amount: totalAmount, createdAt: orders.createdAt,
+      status: orders.status, amountMinor: totalMinor, createdAt: orders.createdAt,
       cursorTime: cursorTime(orders.createdAt),
     })
     .from(orders)
@@ -43,7 +43,7 @@ export const orderReviewRoutes: FastifyPluginAsync = async app => {
         id: orders.id, orderNumber: orders.orderNumber, locale: orders.locale,
         status: orders.status, paymentStatus: orders.paymentStatus,
         shippingAddress: orders.shippingAddress, notes: orders.notes,
-        shippingAmount: orders.shippingAmount,
+        shippingAmountMinor: orders.shippingAmountMinor,
         declineReason: orders.declineReason, reviewedAt: orders.reviewedAt, reviewedByEmail: orders.reviewedByEmail,
         reviewEmailSentAt: orders.reviewEmailSentAt, confirmationEmailSentAt: orders.confirmationEmailSentAt,
         createdAt: orders.createdAt,
@@ -60,7 +60,7 @@ export const orderReviewRoutes: FastifyPluginAsync = async app => {
       .select({
         id: orderItems.id, productId: orderItems.productId, variantId: orderItems.variantId,
         sku: orderItems.sku, name: orderItems.productName, dimensions: orderItems.dimensions,
-        quantity: orderItems.quantity, unitPrice: orderItems.unitPrice, personalization: orderItems.personalization,
+        quantity: orderItems.quantity, unitPriceMinor: orderItems.unitPriceMinor, personalization: orderItems.personalization,
       })
       .from(orderItems)
       .where(eq(orderItems.orderId, id))
@@ -68,8 +68,8 @@ export const orderReviewRoutes: FastifyPluginAsync = async app => {
     return {
       ...order,
       items,
-      subtotal: items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
-      amount: items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) + order.shippingAmount,
+      subtotalMinor: items.reduce((sum, item) => sum + item.unitPriceMinor * item.quantity, 0),
+      amountMinor: items.reduce((sum, item) => sum + item.unitPriceMinor * item.quantity, 0) + order.shippingAmountMinor,
     }
   })
 

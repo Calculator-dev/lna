@@ -4,7 +4,9 @@ import type React from "react"
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { activeVariants, defaultShippingPolicy, shippingFor, type CatalogueOffer, type LocalizedProduct, type ShippingPolicy } from "@/lib/products"
 
-const STORAGE_KEY = "lna-cart-v1"
+const STORAGE_KEY = "lna-cart-v2"
+// Carts saved while prices were whole KM; read once and converted to feninga.
+const LEGACY_STORAGE_KEY = "lna-cart-v1"
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export type CartItem = {
@@ -16,7 +18,7 @@ export type CartItem = {
   slug: string
   name: string
   image: string
-  price: number
+  priceMinor: number
   quantity: number
   personalization?: string
   type: "standard" | "custom"
@@ -37,8 +39,8 @@ type CartContextValue = {
   /** Outcome of the latest catalogue sync, or null while one is pending. */
   lastSync: CartSyncResult | null
   totalItems: number
-  subtotal: number
-  shippingAmount: number
+  subtotalMinor: number
+  shippingAmountMinor: number
   shippingPolicy: ShippingPolicy
 }
 
@@ -52,7 +54,7 @@ function isCartItem(value: unknown): value is CartItem {
     && typeof item.slug === "string"
     && typeof item.name === "string"
     && typeof item.image === "string"
-    && typeof item.price === "number" && Number.isFinite(item.price)
+    && typeof item.priceMinor === "number" && Number.isInteger(item.priceMinor)
     && typeof item.quantity === "number" && Number.isInteger(item.quantity) && item.quantity > 0
     && (item.type === "standard" || item.type === "custom")
 }
@@ -60,9 +62,20 @@ function isCartItem(value: unknown): value is CartItem {
 function readStoredCart(): CartItem[] {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed: unknown = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed.filter(isCartItem) : []
+    if (raw) {
+      const parsed: unknown = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed.filter(isCartItem) : []
+    }
+    const legacy: unknown = JSON.parse(window.localStorage.getItem(LEGACY_STORAGE_KEY) ?? "[]")
+    window.localStorage.removeItem(LEGACY_STORAGE_KEY)
+    // The catalogue sync reprices these anyway; converting keeps totals right until it does.
+    return Array.isArray(legacy)
+      ? legacy.map(item => {
+          if (!item || typeof item.price !== "number") return item
+          const { price, ...rest } = item
+          return { ...rest, priceMinor: Math.round(price * 100) }
+        }).filter(isCartItem)
+      : []
   } catch {
     // Unavailable storage (private mode, blocked site data) or corrupt JSON: start empty.
     return []
@@ -118,8 +131,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         removed++
         continue
       }
-      if (variant.price !== item.price) repriced++
-      next.push({ ...item, price: variant.price, variantSku: variant.sku, dimensions: variant.dimensions })
+      if (variant.priceMinor !== item.priceMinor) repriced++
+      next.push({ ...item, priceMinor: variant.priceMinor, variantSku: variant.sku, dimensions: variant.dimensions })
     }
     setCatalogue(null)
     setLastSync({ repriced, removed })
@@ -133,7 +146,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const value = useMemo<CartContextValue>(() => {
-    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    const subtotalMinor = items.reduce((sum, item) => sum + item.priceMinor * item.quantity, 0)
     return {
       items,
       isOpen,
@@ -166,7 +179,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               slug: product.localizedSlug,
               name: product.localizedName,
               image: product.primaryImage.url,
-              price: selected.price,
+              priceMinor: selected.priceMinor,
               quantity,
               personalization,
               type: product.type,
@@ -187,8 +200,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       syncWithCatalogue,
       lastSync,
       totalItems: items.reduce((sum, item) => sum + item.quantity, 0),
-      subtotal,
-      shippingAmount: shippingFor(subtotal, shippingPolicy),
+      subtotalMinor,
+      shippingAmountMinor: shippingFor(subtotalMinor, shippingPolicy),
       shippingPolicy,
     }
   }, [isOpen, items, lastSync, shippingPolicy, syncWithCatalogue])

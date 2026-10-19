@@ -1,4 +1,5 @@
 import { env } from "../env.js"
+import { formatKM } from "../lib/money.js"
 
 export type DecisionEmail = {
   to: string
@@ -14,8 +15,8 @@ export type ConfirmationEmail = {
   fullName: string
   orderNumber: string
   locale: "bs" | "en"
-  items: Array<{ name: string; quantity: number; unitPrice: number }>
-  shippingAmount: number
+  items: Array<{ name: string; quantity: number; unitPriceMinor: number }>
+  shippingAmountMinor: number
   shipping: { address: string; city: string; postalCode?: string; country: string }
 }
 
@@ -53,10 +54,11 @@ async function sendEmail(input: { to: string; subject: string; html: string; rep
 
 export async function sendOrderConfirmationEmail(input: ConfirmationEmail): Promise<EmailResult> {
   const bosnian = input.locale === "bs"
-  const subtotal = input.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
-  const total = subtotal + input.shippingAmount
-  const rows = input.items.map(item => `<tr><td style="padding:10px 0;border-bottom:1px solid #e5e5e5">${escapeHtml(item.name)} × ${item.quantity}</td><td style="padding:10px 0;border-bottom:1px solid #e5e5e5;text-align:right">${item.unitPrice * item.quantity} KM</td></tr>`).join("")
-    + `<tr><td style="padding:10px 0;border-bottom:1px solid #e5e5e5">${bosnian ? "Dostava" : "Delivery"}</td><td style="padding:10px 0;border-bottom:1px solid #e5e5e5;text-align:right">${input.shippingAmount === 0 ? (bosnian ? "Besplatna" : "Free") : `${input.shippingAmount} KM`}</td></tr>`
+  const money = (minor: number) => formatKM(minor, input.locale)
+  const subtotal = input.items.reduce((sum, item) => sum + item.unitPriceMinor * item.quantity, 0)
+  const total = subtotal + input.shippingAmountMinor
+  const rows = input.items.map(item => `<tr><td style="padding:10px 0;border-bottom:1px solid #e5e5e5">${escapeHtml(item.name)} × ${item.quantity}</td><td style="padding:10px 0;border-bottom:1px solid #e5e5e5;text-align:right">${money(item.unitPriceMinor * item.quantity)}</td></tr>`).join("")
+    + `<tr><td style="padding:10px 0;border-bottom:1px solid #e5e5e5">${bosnian ? "Dostava" : "Delivery"}</td><td style="padding:10px 0;border-bottom:1px solid #e5e5e5;text-align:right">${input.shippingAmountMinor === 0 ? (bosnian ? "Besplatna" : "Free") : money(input.shippingAmountMinor)}</td></tr>`
   const location = [input.shipping.postalCode, input.shipping.city].filter(Boolean).join(" ")
   const subject = bosnian ? `Primili smo vašu narudžbu ${input.orderNumber}` : `We received your order ${input.orderNumber}`
   const html = `<div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;color:#222">
@@ -64,7 +66,7 @@ export async function sendOrderConfirmationEmail(input: ConfirmationEmail): Prom
     <p>${escapeHtml(bosnian ? `Poštovani/a ${input.fullName},` : `Dear ${input.fullName},`)}</p>
     <p>${bosnian ? "Vaša narudžba je uspješno zaprimljena. Pregledat ćemo dostupnost i javiti vam se uskoro." : "Your order has been received successfully. We will review availability and contact you shortly."}</p>
     <p><strong>${bosnian ? "Broj narudžbe" : "Order number"}:</strong> ${escapeHtml(input.orderNumber)}</p>
-    <table style="width:100%;border-collapse:collapse;margin:24px 0"><tbody>${rows}<tr><td style="padding-top:14px"><strong>${bosnian ? "Ukupno" : "Total"}</strong></td><td style="padding-top:14px;text-align:right"><strong>${total} KM</strong></td></tr></tbody></table>
+    <table style="width:100%;border-collapse:collapse;margin:24px 0"><tbody>${rows}<tr><td style="padding-top:14px"><strong>${bosnian ? "Ukupno" : "Total"}</strong></td><td style="padding-top:14px;text-align:right"><strong>${money(total)}</strong></td></tr></tbody></table>
     <p><strong>${bosnian ? "Dostava" : "Shipping"}</strong><br>${escapeHtml(input.shipping.address)}<br>${escapeHtml(location)}<br>${escapeHtml(input.shipping.country)}</p>
     <p>${bosnian ? "Srdačno," : "Kind regards,"}<br>LNA kreativna sehara</p>
   </div>`

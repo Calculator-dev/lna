@@ -27,7 +27,7 @@ export function catalogueResponse(
       variants: publicVariants(row, variantsByProduct.get(row.id)),
       id: row.id, sku: row.sku, categoryId: row.categoryId, categoryName: categoryNames.get(row.categoryId) ?? { bs: "", en: "" },
       type: row.type, material: row.material, featured: row.featured, customizable: row.customizable,
-      price: row.price, currency: "BAM" as const, dimensions: row.dimensions,
+      priceMinor: row.priceMinor, currency: "BAM" as const, dimensions: row.dimensions,
       leadTime: row.leadTime, stockLabel: row.stockLabel,
       ...Object.fromEntries(["name", "slug", "tagline", "shortDescription", "description", "care"].map(field => [field, localized(row.translations, field)])),
       seo: { title: localized(row.seo, "title"), description: localized(row.seo, "description") },

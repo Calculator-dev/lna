@@ -10,7 +10,7 @@ import { formatPrice, type Locale, isSvg } from "@/lib/products"
 import { cn } from "@/lib/utils"
 
 export function CartDrawer({ locale }: { locale: Locale }) {
-  const { items, isOpen, setOpen, removeItem, subtotal, updateQuantity } = useCart()
+  const { items, isOpen, setOpen, removeItem, subtotalMinor, updateQuantity } = useCart()
   const checkoutHref = locale === "en" ? "/en/checkout" : "/checkout"
   const cartHref = locale === "en" ? "/en/cart" : "/cart"
   const panel = useModalPanel<HTMLElement>(isOpen, () => setOpen(false))
@@ -72,7 +72,7 @@ export function CartDrawer({ locale }: { locale: Locale }) {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="font-medium text-foreground">{item.name}</p>
-                        <p className="mt-1 text-sm text-muted-foreground">{formatPrice(item.price, locale)}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{formatPrice(item.priceMinor, locale)}</p>
                         {item.dimensions && <p className="mt-1 text-xs text-muted-foreground">{t("dimensions", { dimensions: item.dimensions })}</p>}
                         {item.variantSku && <p className="mt-1 text-[11px] text-muted-foreground">SKU: {item.variantSku}</p>}
                       </div>
@@ -98,7 +98,7 @@ export function CartDrawer({ locale }: { locale: Locale }) {
             <div className="border-t border-border/60 px-5 py-5">
               <div className="mb-4 flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{t("drawerSubtotal")}</span>
-                <span className="font-serif text-3xl">{formatPrice(subtotal, locale)}</span>
+                <span className="font-serif text-3xl">{formatPrice(subtotalMinor, locale)}</span>
               </div>
               <Link
                 href={checkoutHref}

@@ -37,7 +37,7 @@
     "retry": "Try again"
   },
   "header": {
-    "freeDelivery": "Free delivery on orders from {amount} BAM",
+    "freeDelivery": "Free delivery on orders from {amount}",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "menu": "Menu",

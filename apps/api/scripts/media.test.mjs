@@ -34,7 +34,7 @@ test("image input rejects multiple primary photos and duplicate attachments", ()
     newCategory: locale,
     type: "standard",
     material: "wood",
-    variants: [{ sku: "TEST-10", dimensions: "10 cm", price: 1, active: true }],
+    variants: [{ sku: "TEST-10", dimensions: "10 cm", priceMinor: 100, active: true }],
     leadTime: locale,
     stockLabel: locale,
     translations: {

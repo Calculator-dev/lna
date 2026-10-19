@@ -63,8 +63,9 @@ export default async function Page({ params }: Props) {
             offers: {
               "@type": "AggregateOffer",
               priceCurrency: product.currency,
-              lowPrice: price.amount,
-              highPrice: Math.max(...activeVariants(product).map(variant => variant.price)),
+              // schema.org prices are decimal KM.
+              lowPrice: price.amountMinor / 100,
+              highPrice: Math.max(...activeVariants(product).map(variant => variant.priceMinor)) / 100,
               offerCount: activeVariants(product).length,
               // Items are made after the order is confirmed.
               availability: "https://schema.org/MadeToOrder",
