@@ -70,7 +70,7 @@ export function OrderDetails({ id, onBack }: { id: string; onBack: () => void })
             <table className="w-full min-w-140 text-left text-sm">
               <thead className="text-muted-foreground"><tr><th className="pb-3 font-medium">Proizvod</th><th className="pb-3 font-medium">Količina</th><th className="pb-3 text-right font-medium">Cijena</th><th className="pb-3 text-right font-medium">Ukupno</th></tr></thead>
               <tbody>{order.items.map(item => <tr key={item.id} className="border-t border-border">
-                <td className="py-4"><p className="font-medium">{item.name}</p><p className="mt-1 text-xs text-muted-foreground">{[item.sku, item.dimensions].filter(Boolean).join(" · ")}</p>{item.personalization && <p className="mt-2 text-xs">Personalizacija: {item.personalization}</p>}</td>
+                <td className="py-4"><div className="flex items-start gap-3">{item.imageUrl ? <img src={item.imageUrl} alt="" loading="lazy" width={56} height={56} className="h-14 w-14 shrink-0 rounded-lg border border-border bg-muted object-cover" /> : <span className="h-14 w-14 shrink-0 rounded-lg border border-dashed border-border bg-muted" aria-hidden />}<div><p className="font-medium">{item.name}</p><p className="mt-1 text-xs text-muted-foreground">{[item.sku, item.dimensions].filter(Boolean).join(" · ")}</p>{item.personalization && <p className="mt-2 text-xs">Personalizacija: {item.personalization}</p>}</div></div></td>
                 <td className="py-4">{item.quantity}</td><td className="py-4 text-right">{money(item.unitPriceMinor)}</td><td className="py-4 text-right font-medium">{money(item.unitPriceMinor * item.quantity)}</td>
               </tr>)}</tbody>
             </table>

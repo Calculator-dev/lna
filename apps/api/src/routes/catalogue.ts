@@ -2,12 +2,13 @@ import { withImageUrls } from "./media.js";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
-import { and, asc, desc, eq, getTableColumns, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, inArray, isNull } from "drizzle-orm";
 import { db } from "../db/client.js";
 import {
   categories,
   products,
   mediaAssets,
+  orderItems,
   productVariants,
 } from "../db/schema.js";
 import { productInput, slugFor } from "../lib/product-input.js";
@@ -25,7 +26,7 @@ export const catalogueRoutes: FastifyPluginAsync = async (app) => {
     const query = db
       .select({ ...getTableColumns(products), cursorTime: cursorTime(products.createdAt) })
       .from(products)
-      .where(before ? beforeCursor(products.createdAt, products.id, before) : undefined)
+      .where(and(isNull(products.archivedAt), before ? beforeCursor(products.createdAt, products.id, before) : undefined))
       .orderBy(desc(products.createdAt), desc(products.id));
     const rows = page(reply, await (limit ? query.limit(limit + 1) : query), limit);
     const primaryImages = rows.length
@@ -62,7 +63,7 @@ export const catalogueRoutes: FastifyPluginAsync = async (app) => {
     const [product] = await db
       .select()
       .from(products)
-      .where(eq(products.id, id))
+      .where(and(eq(products.id, id), isNull(products.archivedAt)))
       .limit(1);
     if (!product) return reply.code(404).send({ message: "Product not found" });
     const media = await db
@@ -94,7 +95,7 @@ export const catalogueRoutes: FastifyPluginAsync = async (app) => {
           [existing] = await tx
             .select()
             .from(products)
-            .where(eq(products.id, productId))
+            .where(and(eq(products.id, productId), isNull(products.archivedAt)))
             .limit(1)
             .for("update");
           if (!existing) throw app.httpErrors.notFound("Product not found");
@@ -296,6 +297,41 @@ export const catalogueRoutes: FastifyPluginAsync = async (app) => {
     }
   }
   app.post("/products", (request, reply) => save(request, reply));
+  // A product that appears in orders is archived instead (hidden from the shop and this list),
+  // so its orders keep their product. Others are deleted with their variants; their images are
+  // detached and removed later by scripts/cleanup-media.mjs.
+  app.delete("/products/:id", async (request, reply) => {
+    const { id } = params.parse(request.params);
+    const outcome = await db.transaction(async (tx) => {
+      // The row lock waits for a checkout that is reading this product, so its order is seen.
+      const [product] = await tx
+        .select({ id: products.id })
+        .from(products)
+        .where(and(eq(products.id, id), isNull(products.archivedAt)))
+        .limit(1)
+        .for("update");
+      if (!product) return undefined;
+      const [ordered] = await tx
+        .select({ id: orderItems.id })
+        .from(orderItems)
+        .where(eq(orderItems.productId, id))
+        .limit(1);
+      if (ordered) {
+        const now = new Date();
+        await tx.update(products).set({ archivedAt: now, updatedAt: now }).where(eq(products.id, id));
+        return "archived" as const;
+      }
+      await tx
+        .update(mediaAssets)
+        .set({ productId: null, isPrimary: false })
+        .where(eq(mediaAssets.productId, id));
+      await tx.delete(products).where(eq(products.id, id));
+      return "deleted" as const;
+    });
+    if (!outcome) return reply.code(404).send({ message: "Product not found" });
+    await revalidateStorefrontCatalogue(request.log);
+    return { outcome };
+  });
   app.put("/products/:id", (request, reply) =>
     save(request, reply, params.parse(request.params).id),
   );

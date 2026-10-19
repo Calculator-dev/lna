@@ -1,6 +1,6 @@
 import { db } from "../db/client.js"
 import { categories, products, mediaAssets, productVariants } from "../db/schema.js"
-import { asc, desc, isNotNull } from "drizzle-orm"
+import { asc, desc, isNotNull, isNull } from "drizzle-orm"
 import { shippingPolicy } from "../lib/shipping.js"
 import { publicVariants } from "../lib/variants.js"
 
@@ -42,7 +42,7 @@ export function catalogueResponse(
 export async function getPublicCatalogue() {
   const [categoryRows, productRows, images, variantRows] = await Promise.all([
     db.select().from(categories).orderBy(categories.code),
-    db.select().from(products).orderBy(desc(products.createdAt)),
+    db.select().from(products).where(isNull(products.archivedAt)).orderBy(desc(products.createdAt)),
     db.select().from(mediaAssets).where(isNotNull(mediaAssets.productId)).orderBy(mediaAssets.createdAt),
     db.select().from(productVariants).orderBy(productVariants.productId, asc(productVariants.sortOrder), productVariants.createdAt),
   ])

@@ -1,8 +1,9 @@
 import type { FastifyPluginAsync } from "fastify"
-import { and, desc, eq, sql } from "drizzle-orm"
+import { and, desc, eq, inArray, sql } from "drizzle-orm"
 import { z } from "zod"
 import { db } from "../db/client.js"
-import { customers, orderItems, orders } from "../db/schema.js"
+import { customers, mediaAssets, orderItems, orders } from "../db/schema.js"
+import { imageUrl } from "../services/backblaze.js"
 import { queueEmail, wakeEmailWorker } from "../services/email-outbox.js"
 import { beforeCursor, cursorTime, page, pageQuery } from "../lib/pagination.js"
 
@@ -65,9 +66,18 @@ export const orderReviewRoutes: FastifyPluginAsync = async app => {
       .from(orderItems)
       .where(eq(orderItems.orderId, id))
 
+    // Each line shows its product's current main image; a missing or unsignable one is left out.
+    const productIds = [...new Set(items.map(item => item.productId))]
+    const images = productIds.length
+      ? await db.select({ productId: mediaAssets.productId, storageKey: mediaAssets.storageKey }).from(mediaAssets)
+        .where(and(inArray(mediaAssets.productId, productIds), eq(mediaAssets.isPrimary, true)))
+      : []
+    const imageByProduct = new Map(await Promise.all(images.map(async image =>
+      [image.productId, await imageUrl(image.storageKey).catch(() => null)] as const)))
+
     return {
       ...order,
-      items,
+      items: items.map(item => ({ ...item, imageUrl: imageByProduct.get(item.productId) ?? null })),
       subtotalMinor: items.reduce((sum, item) => sum + item.unitPriceMinor * item.quantity, 0),
       amountMinor: items.reduce((sum, item) => sum + item.unitPriceMinor * item.quantity, 0) + order.shippingAmountMinor,
     }
