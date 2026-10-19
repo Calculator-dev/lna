@@ -36,6 +36,13 @@
       "when": 1792392836251,
       "tag": "0004_prices_in_feninga",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792413567580,
+      "tag": "0005_drop_whole_km_columns",
+      "breakpoints": true
     }
   ]
 }
