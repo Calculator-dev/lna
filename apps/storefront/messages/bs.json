@@ -37,7 +37,7 @@
     "retry": "Pokušaj ponovo"
   },
   "header": {
-    "freeDelivery": "Besplatna dostava za narudžbe od {amount} KM",
+    "freeDelivery": "Besplatna dostava za narudžbe od {amount}",
     "openMenu": "Otvori meni",
     "closeMenu": "Zatvori meni",
     "menu": "Meni",

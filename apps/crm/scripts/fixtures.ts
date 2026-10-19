@@ -32,7 +32,7 @@ export const seedProducts = [
     material: "wood",
     featured: true,
     customizable: true,
-    price: 45,
+    priceMinor: 4500,
     dimensions: "30 x 30 cm",
     leadTime: { bs: "3 do 5 radnih dana", en: "3 to 5 business days" },
     stockLabel: { bs: "Po narudžbi", en: "Made to order" },
@@ -61,7 +61,7 @@ export const seedProducts = [
     material: "wood",
     featured: true,
     customizable: true,
-    price: 120,
+    priceMinor: 12000,
     dimensions: "Od 30 x 20 cm",
     leadTime: { bs: "5 do 8 radnih dana", en: "5 to 8 business days" },
     stockLabel: { bs: "Po narudžbi", en: "Made to order" },
@@ -93,7 +93,7 @@ export const seedDashboard = {
     productsActive: 12,
   },
   recentOrders: [
-    { id: "b3f22b86-3991-46a6-b67b-0b2d696be12e", orderNumber: "LNA-104251", customer: "Amina K.", status: "submitted", amount: 98, createdAt: "2026-04-25T09:00:00.000Z" },
-    { id: "a7d7da0b-e3e7-4d10-bd2e-46c90b41ef48", orderNumber: "LNA-104144", customer: "Mia Studio", status: "confirmed", amount: 120, createdAt: "2026-04-24T09:00:00.000Z" },
+    { id: "b3f22b86-3991-46a6-b67b-0b2d696be12e", orderNumber: "LNA-104251", customer: "Amina K.", status: "submitted", amountMinor: 9850, createdAt: "2026-04-25T09:00:00.000Z" },
+    { id: "a7d7da0b-e3e7-4d10-bd2e-46c90b41ef48", orderNumber: "LNA-104144", customer: "Mia Studio", status: "confirmed", amountMinor: 12000, createdAt: "2026-04-24T09:00:00.000Z" },
   ],
 }

@@ -6,8 +6,20 @@ export type VariantDraft = {
   id?: string
   sku: string
   dimensions: string
+  /** As typed, in KM: "45" or "45.50". */
   price: string
   active: boolean
+}
+
+/** KM as typed (a comma also works as the decimal mark) to feninga; NaN when it isn't a number. */
+export function toMinor(km: string) {
+  const value = km.trim().replace(",", ".")
+  return value && /^\d+(\.\d{1,2})?$/.test(value) ? Math.round(Number(value) * 100) : Number.NaN
+}
+
+/** Feninga to KM for the price field: "45" or "45.50". */
+export function fromMinor(minor: number) {
+  return minor % 100 === 0 ? String(minor / 100) : (minor / 100).toFixed(2)
 }
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -23,7 +35,7 @@ export function variantDrafts(product?: ProductDetails): VariantDraft[] {
         id: "primary",
         sku: product?.sku ?? "",
         dimensions: product?.dimensions ?? "",
-        price: product?.price ?? 0,
+        priceMinor: product?.priceMinor ?? 0,
         active: true,
         isDefault: true,
       }]
@@ -34,7 +46,7 @@ export function variantDrafts(product?: ProductDetails): VariantDraft[] {
     id: uuidPattern.test(variant.id) ? variant.id : undefined,
     sku: variant.sku,
     dimensions: variant.dimensions,
-    price: product ? String(variant.price) : "",
+    price: product ? fromMinor(variant.priceMinor) : "",
     active: variant.active ?? true,
   }))
 }
@@ -66,7 +78,7 @@ export function productPayload({ form, category, images, variants, mainDimension
       ...(variant.id ? { id: variant.id } : {}),
       sku: variant.sku.trim(),
       dimensions: (index === 0 ? mainDimensions : variant.dimensions).trim(),
-      price: Number(variant.price),
+      priceMinor: toMinor(variant.price),
       active: variant.active,
     })),
     leadTime: localized("leadTime"),

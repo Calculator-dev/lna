@@ -20,7 +20,8 @@ const variantInput = z.object({
     .regex(/^[A-Za-z0-9_-]+$/, "Use letters, numbers, dashes, or underscores")
     .transform((value) => value.toUpperCase()),
   dimensions: short,
-  price: z.number().int().min(0).max(1000000),
+  // Feninga: 4550 is 45,50 KM.
+  priceMinor: z.number().int().min(0).max(100_000_000),
   active: z.boolean().default(true),
 });
 export const productInput = z

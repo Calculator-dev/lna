@@ -40,7 +40,7 @@ export function ProductDetail({ locale, product }: { locale: Locale; product: Lo
       <p className="mt-5 break-all text-xs text-muted-foreground">SKU: <span className="text-foreground">{selectedVariant.sku}</span></p>
 
       <div className="mt-5 flex flex-wrap items-center gap-4">
-        <p className="text-3xl font-semibold tracking-tight text-foreground">{formatPrice(selectedVariant.price, locale)}</p>
+        <p className="text-3xl font-semibold tracking-tight text-foreground">{formatPrice(selectedVariant.priceMinor, locale)}</p>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-resin-soft px-3 py-1.5 text-xs font-semibold text-primary"><Check className="h-3.5 w-3.5" />{product.localizedStockLabel}</span>
       </div>
 
@@ -110,7 +110,7 @@ export function ProductDetail({ locale, product }: { locale: Locale; product: Lo
           onClick={handleAdd}
           className="btn-primary flex-1"
         >
-          {t("addToCart")} · {formatPrice(selectedVariant.price * quantity, locale)}
+          {t("addToCart")} · {formatPrice(selectedVariant.priceMinor * quantity, locale)}
         </button>
       </div>
 

@@ -9,13 +9,13 @@ const productId = '2b475b74-b75f-452a-9d55-33b4466ce00f'
 const payload = {
   locale: 'en', customer: { fullName: 'Test Customer', email: 'test@example.com' },
   shipping: { address: 'Test street 1', city: 'Sarajevo', country: 'BA' },
-  items: [{ productId, quantity: 2, unitPrice: 1 }],
+  items: [{ productId, quantity: 2, unitPriceMinor: 1 }],
 }
 
 test('orders use database prices, reject missing products, and report storage failures', async () => {
   const app = createApp()
   const original = db.transaction
-  let selected = [{ id: productId, sku: 'TEST-1', price: 45, dimensions: '20 cm', customizable: false, translations: { bs: { name: 'Test proizvod' }, en: { name: 'Test product' } } }]
+  let selected = [{ id: productId, sku: 'TEST-1', priceMinor: 4550, dimensions: '20 cm', customizable: false, translations: { bs: { name: 'Test proizvod' }, en: { name: 'Test product' } } }]
   let inserts = []
   let failItems = false
   db.transaction = async callback => callback({
@@ -32,21 +32,21 @@ test('orders use database prices, reject missing products, and report storage fa
     const response = await app.inject({ method: 'POST', url: '/public/orders', payload })
     assert.equal(response.statusCode, 201)
     const line = inserts.find(entry => entry.table === orderItems).values[0]
-    assert.equal(line.unitPrice, 45)
+    assert.equal(line.unitPriceMinor, 4550)
     // Lines keep their own copy of what was ordered, in the order's language.
     assert.equal(line.sku, 'TEST-1')
     assert.equal(line.productName, 'Test product')
     assert.equal(line.dimensions, '20 cm')
-    // 2 × 45 = 90 KM is below the free-delivery threshold.
-    assert.equal(inserts.find(entry => entry.table === orders).values.shippingAmount, 10)
-    assert.equal(response.json().subtotal, 90)
-    assert.equal(response.json().total, 100)
+    // 2 × 45,50 = 91 KM is below the free-delivery threshold.
+    assert.equal(inserts.find(entry => entry.table === orders).values.shippingAmountMinor, 1000)
+    assert.equal(response.json().subtotalMinor, 9100)
+    assert.equal(response.json().totalMinor, 10100)
 
     inserts = []
     const large = await app.inject({ method: 'POST', url: '/public/orders', payload: { ...payload, items: [{ productId, quantity: 4 }] } })
     assert.equal(large.statusCode, 201)
-    assert.equal(inserts.find(entry => entry.table === orders).values.shippingAmount, 0)
-    assert.equal(large.json().total, 180)
+    assert.equal(inserts.find(entry => entry.table === orders).values.shippingAmountMinor, 0)
+    assert.equal(large.json().totalMinor, 18200)
 
     inserts = []
     const oversized = { ...payload, customer: { ...payload.customer, phone: '1'.repeat(61) } }
@@ -63,7 +63,7 @@ test('orders use database prices, reject missing products, and report storage fa
     assert.equal((await app.inject({ method: 'POST', url: '/public/orders', payload })).statusCode, 400)
     assert.equal(inserts.length, 0)
 
-    selected = [{ id: productId, sku: 'TEST-1', price: 45, dimensions: '20 cm', customizable: false, translations: { bs: { name: 'Test proizvod' }, en: { name: 'Test product' } } }]
+    selected = [{ id: productId, sku: 'TEST-1', priceMinor: 4550, dimensions: '20 cm', customizable: false, translations: { bs: { name: 'Test proizvod' }, en: { name: 'Test product' } } }]
     const personalized = { ...payload, items: [{ productId, quantity: 1, personalization: 'Name' }] }
     assert.equal((await app.inject({ method: 'POST', url: '/public/orders', payload: personalized })).statusCode, 400)
     assert.equal(inserts.length, 0)
@@ -82,14 +82,14 @@ test('a retried order with the same idempotency key returns the original order w
   const app = createApp()
   const originalTransaction = db.transaction
   const originalSelect = db.select
-  const product = { id: productId, sku: 'TEST-1', price: 45, dimensions: '20 cm', customizable: false, translations: { bs: { name: 'Test proizvod' } } }
-  const placed = { id: 'order-id', orderNumber: 'LNA-260101-ABCDEF12', status: 'submitted', shippingAmount: 10 }
+  const product = { id: productId, sku: 'TEST-1', priceMinor: 4550, dimensions: '20 cm', customizable: false, translations: { bs: { name: 'Test proizvod' } } }
+  const placed = { id: 'order-id', orderNumber: 'LNA-260101-ABCDEF12', status: 'submitted', shippingAmountMinor: 1000 }
   let stored = []
   let transactions = 0
   let raceLost = false
   db.select = () => ({ from: table => ({ where: () => table === orders
     ? { limit: async () => stored }
-    : Promise.resolve([{ unitPrice: 45, quantity: 2 }]) }) })
+    : Promise.resolve([{ unitPriceMinor: 4550, quantity: 2 }]) }) })
   db.transaction = async callback => {
     transactions++
     if (raceLost) {
@@ -119,7 +119,7 @@ test('a retried order with the same idempotency key returns the original order w
     assert.equal(retried.statusCode, 200)
     assert.equal(transactions, 1)
     assert.equal(retried.json().orderNumber, placed.orderNumber)
-    assert.equal(retried.json().total, 100)
+    assert.equal(retried.json().totalMinor, 10100)
     assert.equal(retried.json().replayed, true)
 
     // Two requests with one key at the same time: the loser answers with the winner's order.

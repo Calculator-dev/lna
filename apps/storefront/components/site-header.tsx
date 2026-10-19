@@ -9,7 +9,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useCart } from "@/components/cart-provider";
 import { CartDrawer } from "@/components/cart-drawer";
-import { alternateLocalePath, buildPath, siteName, type Locale } from "@/lib/products";
+import { alternateLocalePath, buildPath, formatPrice, siteName, type Locale } from "@/lib/products";
 import { cn } from "@/lib/utils";
 import { Wordmark } from "@/components/wordmark";
 
@@ -39,7 +39,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
       <div className="bg-primary px-3 py-2 text-primary-foreground">
         <div className="mx-auto flex max-w-375 items-center justify-center gap-4 text-center text-[11px] font-medium tracking-[0.04em] sm:text-xs">
           <span className="ornament hidden w-20 opacity-40 sm:block" aria-hidden />
-          {t("freeDelivery", { amount: String(shippingPolicy.freeFrom) })}
+          {t("freeDelivery", { amount: formatPrice(shippingPolicy.freeFromMinor, locale) })}
           <span className="ornament hidden w-20 opacity-40 sm:block" aria-hidden />
         </div>
       </div>

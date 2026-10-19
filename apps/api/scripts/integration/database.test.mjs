@@ -43,8 +43,8 @@ const product = {
   material: 'wood',
   customizable: true,
   variants: [
-    { sku: 'SIGN-S', dimensions: '20 cm', price: 45, active: true },
-    { sku: 'SIGN-L', dimensions: '40 cm', price: 80, active: true },
+    { sku: 'SIGN-S', dimensions: '20 cm', priceMinor: 4500, active: true },
+    { sku: 'SIGN-L', dimensions: '40 cm', priceMinor: 8050, active: true },
   ],
   leadTime: { bs: '5 dana', en: '5 days' },
   stockLabel: { bs: 'Po narudžbi', en: 'Made to order' },
@@ -67,7 +67,7 @@ test('products save with variants, keep their slugs, and survive swapping SKUs',
     assert.equal(created.statusCode, 201)
     const { id, translations } = created.json()
     const saved = (await admin.inject(`/products/${id}`)).json()
-    assert.deepEqual(saved.variants.map(variant => [variant.sku, variant.price, variant.isDefault]), [['SIGN-S', 45, true], ['SIGN-L', 80, false]])
+    assert.deepEqual(saved.variants.map(variant => [variant.sku, variant.priceMinor, variant.isDefault]), [['SIGN-S', 4500, true], ['SIGN-L', 8050, false]])
 
     // Swapping SKUs between existing variants must not trip their unique constraint.
     const [small, large] = saved.variants
@@ -82,7 +82,7 @@ test('products save with variants, keep their slugs, and survive swapping SKUs',
     assert.deepEqual(after.variants.map(variant => [variant.id, variant.sku]), [[small.id, 'SIGN-L'], [large.id, 'SIGN-S']])
 
     // A SKU another product already uses is a conflict, not a server error.
-    const duplicate = await admin.inject({ method: 'POST', url: '/products', payload: { ...product, newCategory: undefined, categoryId: saved.categoryId, variants: [{ sku: 'SIGN-S', dimensions: '1 cm', price: 1 }] } })
+    const duplicate = await admin.inject({ method: 'POST', url: '/products', payload: { ...product, newCategory: undefined, categoryId: saved.categoryId, variants: [{ sku: 'SIGN-S', dimensions: '1 cm', priceMinor: 100 }] } })
     assert.equal(duplicate.statusCode, 409)
   } finally {
     await admin.close()
@@ -94,7 +94,7 @@ test('checkout prices from the database, stores a snapshot, and is idempotent', 
   try {
     const [listed] = (await admin.inject('/products')).json()
     const { variants } = (await admin.inject(`/products/${listed.id}`)).json()
-    const large = variants.find(variant => variant.price === 80)
+    const large = variants.find(variant => variant.priceMinor === 8050)
 
     // The public product lookup by localized slug (a jsonb query).
     const bySlug = await app.inject(`/public/products/${listed.translations.en.slug}?locale=en`)
@@ -105,7 +105,8 @@ test('checkout prices from the database, stores a snapshot, and is idempotent', 
     const headers = { 'idempotency-key': 'integration-key-0001' }
     const first = await app.inject({ method: 'POST', url: '/public/orders', payload: order, headers })
     assert.equal(first.statusCode, 201)
-    assert.equal(first.json().total, 90)
+    // 80,50 KM plus 10 KM delivery.
+    assert.equal(first.json().totalMinor, 9050)
     const retried = await app.inject({ method: 'POST', url: '/public/orders', payload: order, headers })
     assert.equal(retried.statusCode, 200)
     assert.equal(retried.json().orderNumber, first.json().orderNumber)
@@ -116,10 +117,10 @@ test('checkout prices from the database, stores a snapshot, and is idempotent', 
     assert.deepEqual([a.statusCode, b.statusCode].sort(), [200, 201])
     assert.equal(a.json().orderNumber, b.json().orderNumber)
 
-    const { rows } = await pool.query('SELECT o.idempotency_key, i.sku, i.product_name, i.dimensions, i.unit_price, i.variant_id FROM orders o JOIN order_items i ON i.order_id = o.id ORDER BY o.idempotency_key')
+    const { rows } = await pool.query('SELECT o.idempotency_key, i.sku, i.product_name, i.dimensions, i.unit_price_minor, i.variant_id FROM orders o JOIN order_items i ON i.order_id = o.id ORDER BY o.idempotency_key')
     assert.deepEqual(rows, [
-      { idempotency_key: 'integration-key-0001', sku: 'SIGN-S', product_name: 'Renamed sign', dimensions: '40 cm', unit_price: 80, variant_id: large.id },
-      { idempotency_key: 'integration-key-0002', sku: 'SIGN-S', product_name: 'Renamed sign', dimensions: '40 cm', unit_price: 80, variant_id: large.id },
+      { idempotency_key: 'integration-key-0001', sku: 'SIGN-S', product_name: 'Renamed sign', dimensions: '40 cm', unit_price_minor: 8050, variant_id: large.id },
+      { idempotency_key: 'integration-key-0002', sku: 'SIGN-S', product_name: 'Renamed sign', dimensions: '40 cm', unit_price_minor: 8050, variant_id: large.id },
     ])
 
     // The snapshot holds when the product changes afterwards.
@@ -127,7 +128,7 @@ test('checkout prices from the database, stores a snapshot, and is idempotent', 
     const [summary] = await orderSummaries().limit(1)
     const detail = (await admin.inject(`/orders/${summary.id}`)).json()
     assert.equal(detail.items[0].name, 'Renamed sign')
-    assert.equal(detail.amount, 90)
+    assert.equal(detail.amountMinor, 9050)
   } finally {
     await admin.close()
   }
@@ -138,7 +139,7 @@ test('orders are reviewed once, by a recorded admin', async () => {
   try {
     const summaries = await orderSummaries()
     assert.equal(summaries.length, 2)
-    assert.ok(summaries.every(summary => summary.amount === 90 && summary.customer === customer.fullName))
+    assert.ok(summaries.every(summary => summary.amountMinor === 9050 && summary.customer === customer.fullName))
 
     const url = `/orders/${summaries[0].id}/decision`
     const accepted = await admin.inject({ method: 'PUT', url, payload: { decision: 'accept' } })
@@ -234,6 +235,13 @@ test('emails are queued with their change, retried with backoff, and sent once',
     assert.equal(passes[0] + passes[1], 3)
     assert.equal(sent.length, 3)
 
+    // A confirmation queued by the release before feninga (whole KM) still shows the right amounts.
+    sent.length = 0
+    await pool.query("INSERT INTO email_outbox (kind, payload) VALUES ('order_confirmation', $1)", [JSON.stringify({ to: 'a@example.com', fullName: 'Kupac', orderNumber: 'LNA-OLD', locale: 'bs', items: [{ name: 'Natpis', quantity: 2, unitPrice: 45 }], shippingAmount: 10, shipping })])
+    assert.equal(await deliverDueEmails(quiet), 1)
+    assert.match(sent[0].html, /90 KM/)
+    assert.match(sent[0].html, /<strong>100 KM<\/strong>/)
+
     // After the last attempt an email is left alone.
     await pool.query("INSERT INTO email_outbox (kind, payload, attempts) VALUES ('inquiry_notification', '{}', $1)", [MAX_ATTEMPTS])
     assert.equal(await deliverDueEmails(quiet), 0)
@@ -241,4 +249,23 @@ test('emails are queued with their change, retried with backoff, and sent once',
     globalThis.fetch = originalFetch
     Object.assign(env, { RESEND_API_KEY: undefined, ORDER_EMAIL_FROM: undefined, INQUIRY_NOTIFY_EMAIL: undefined })
   }
+})
+
+test('the whole-KM columns the previous release still uses stay in step with feninga', async () => {
+  const { rows: [variant] } = await pool.query("SELECT id, product_id FROM product_variants WHERE price_minor = 8050")
+  // This release writes feninga: the KM column follows, rounded.
+  assert.equal((await pool.query('SELECT price FROM product_variants WHERE id = $1', [variant.id])).rows[0].price, 81)
+  // The previous release writes whole KM: feninga follow.
+  await pool.query('UPDATE product_variants SET price = 60 WHERE id = $1', [variant.id])
+  assert.equal((await pool.query('SELECT price_minor FROM product_variants WHERE id = $1', [variant.id])).rows[0].price_minor, 6000)
+  // Rewriting the same KM value (it saves every field) leaves a finer feninga price alone.
+  await pool.query('UPDATE product_variants SET price_minor = 6050 WHERE id = $1', [variant.id])
+  await pool.query('UPDATE product_variants SET price = 61, sku = sku WHERE id = $1', [variant.id])
+  assert.equal((await pool.query('SELECT price_minor FROM product_variants WHERE id = $1', [variant.id])).rows[0].price_minor, 6050)
+  // An order line the previous release inserts (no feninga) gets them.
+  const { rows: [order] } = await pool.query('SELECT id FROM orders LIMIT 1')
+  const { rows: [line] } = await pool.query("INSERT INTO order_items (order_id, product_id, quantity, unit_price, sku, product_name) VALUES ($1, $2, 1, 45, 'OLD', 'Old release') RETURNING unit_price_minor", [order.id, variant.product_id])
+  assert.equal(line.unit_price_minor, 4500)
+  const { rows: [placed] } = await pool.query("INSERT INTO orders (order_number, locale, customer_id, shipping_address, shipping_amount) SELECT 'LNA-OLD-1', 'bs', customer_id, shipping_address, 10 FROM orders LIMIT 1 RETURNING shipping_amount_minor")
+  assert.equal(placed.shipping_amount_minor, 1000)
 })

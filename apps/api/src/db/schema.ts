@@ -63,7 +63,8 @@ export const products = pgTable("products", {
   material: materialEnum("material").notNull(),
   featured: boolean("featured").notNull().default(false),
   customizable: boolean("customizable").notNull().default(false),
-  price: integer("price").notNull(),
+  // Money is stored in feninga (1/100 KM) throughout; see migration 0004.
+  priceMinor: integer("price_minor").notNull(),
   dimensions: text("dimensions").notNull(),
   leadTime: jsonb("lead_time").$type<Record<string, string>>().notNull(),
   stockLabel: jsonb("stock_label").$type<Record<string, string>>().notNull(),
@@ -101,7 +102,7 @@ export const productVariants = pgTable("product_variants", {
     .references(() => products.id, { onDelete: "cascade" }),
   sku: varchar("sku", { length: 80 }).notNull().unique(),
   dimensions: text("dimensions").notNull(),
-  price: integer("price").notNull(),
+  priceMinor: integer("price_minor").notNull(),
   sortOrder: integer("sort_order").notNull().default(0),
   isDefault: boolean("is_default").notNull().default(false),
   active: boolean("active").notNull().default(true),
@@ -160,7 +161,7 @@ export const orders = pgTable("orders", {
     }>()
     .notNull(),
   notes: text("notes"),
-  shippingAmount: integer("shipping_amount").notNull().default(0),
+  shippingAmountMinor: integer("shipping_amount_minor").notNull(),
   declineReason: text("decline_reason"),
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
   // Supabase user who accepted or declined the order; the email is kept for display.
@@ -192,7 +193,7 @@ export const orderItems = pgTable("order_items", {
   productName: text("product_name").notNull(),
   dimensions: text("dimensions"),
   quantity: integer("quantity").notNull(),
-  unitPrice: integer("unit_price").notNull(),
+  unitPriceMinor: integer("unit_price_minor").notNull(),
   personalization: text("personalization"),
 }).enableRLS();
 

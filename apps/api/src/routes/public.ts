@@ -65,7 +65,7 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
       material: product.material,
       featured: product.featured,
       customizable: product.customizable,
-      price: product.price,
+      priceMinor: product.priceMinor,
       dimensions: product.dimensions,
       leadTime: product.leadTime[locale],
       stockLabel: product.stockLabel[locale],
@@ -93,7 +93,7 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
       material: product.material,
       featured: product.featured,
       customizable: product.customizable,
-      price: product.price,
+      priceMinor: product.priceMinor,
       dimensions: product.dimensions,
       leadTime: product.leadTime[locale],
       stockLabel: product.stockLabel[locale],
@@ -106,21 +106,21 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
   // instead of creating a duplicate (double clicks, lost responses).
   const idempotencyKeySchema = z.string().regex(/^[A-Za-z0-9_-]{16,80}$/).optional()
 
-  const receipt = (order: typeof orders.$inferSelect, subtotal: number) => ({
+  const receipt = (order: typeof orders.$inferSelect, subtotalMinor: number) => ({
     ok: true,
     orderNumber: order.orderNumber,
     status: order.status,
-    subtotal,
-    shippingAmount: order.shippingAmount,
-    total: subtotal + order.shippingAmount,
+    subtotalMinor,
+    shippingAmountMinor: order.shippingAmountMinor,
+    totalMinor: subtotalMinor + order.shippingAmountMinor,
     message: "Manual confirmation pending",
   })
   // The receipt of an order already placed with this key. No email is sent again.
   async function replayedReceipt(idempotencyKey: string) {
     const [order] = await db.select().from(orders).where(eq(orders.idempotencyKey, idempotencyKey)).limit(1)
     if (!order) return undefined
-    const items = await db.select({ unitPrice: orderItems.unitPrice, quantity: orderItems.quantity }).from(orderItems).where(eq(orderItems.orderId, order.id))
-    return { ...receipt(order, items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)), replayed: true }
+    const items = await db.select({ unitPriceMinor: orderItems.unitPriceMinor, quantity: orderItems.quantity }).from(orderItems).where(eq(orderItems.orderId, order.id))
+    return { ...receipt(order, items.reduce((sum, item) => sum + item.unitPriceMinor * item.quantity, 0)), replayed: true }
   }
 
   app.post("/orders", { config: { rateLimit: publicFormRateLimit } }, async (request, reply) => {
@@ -178,32 +178,32 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
           product,
           variant,
           name: product.translations[payload.locale]?.name ?? product.translations.bs?.name ?? product.sku,
-          unitPrice: variant?.price ?? product.price,
+          unitPriceMinor: variant?.priceMinor ?? product.priceMinor,
         }
       })
-      const subtotal = lines.reduce((sum, line) => sum + line.unitPrice * line.item.quantity, 0)
-      const shippingAmount = shippingFor(subtotal)
+      const subtotalMinor = lines.reduce((sum, line) => sum + line.unitPriceMinor * line.item.quantity, 0)
+      const shippingAmountMinor = shippingFor(subtotalMinor)
       const [customer] = await tx.insert(customers).values(payload.customer).returning()
       const [order] = await tx.insert(orders).values({
         orderNumber, locale: payload.locale, customerId: customer.id,
-        shippingAddress: payload.shipping, notes: payload.notes, shippingAmount, idempotencyKey,
+        shippingAddress: payload.shipping, notes: payload.notes, shippingAmountMinor, idempotencyKey,
       }).returning()
       await tx.insert(orderItems).values(lines.map(line => ({
         orderId: order.id, productId: line.item.productId, variantId: line.variant?.id,
         sku: line.variant?.sku ?? line.product.sku, productName: line.name,
         dimensions: line.variant?.dimensions ?? line.product.dimensions,
-        quantity: line.item.quantity, unitPrice: line.unitPrice, personalization: line.item.personalization,
+        quantity: line.item.quantity, unitPriceMinor: line.unitPriceMinor, personalization: line.item.personalization,
       })))
       const notification = await queueEmail(tx, { kind: "order_confirmation", orderId: order.id, payload: {
         to: payload.customer.email,
         fullName: payload.customer.fullName,
         orderNumber: order.orderNumber,
         locale: payload.locale,
-        items: lines.map(line => ({ name: line.name, quantity: line.item.quantity, unitPrice: line.unitPrice })),
-        shippingAmount,
+        items: lines.map(line => ({ name: line.name, quantity: line.item.quantity, unitPriceMinor: line.unitPriceMinor })),
+        shippingAmountMinor,
         shipping: payload.shipping,
       } })
-      return { order, subtotal, notification }
+      return { order, subtotalMinor, notification }
     })
 
     let result: Awaited<ReturnType<typeof placeOrder>>
@@ -219,6 +219,6 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
       throw error
     }
     if (result.notification.queued) wakeEmailWorker()
-    return reply.code(201).send({ ...receipt(result.order, result.subtotal), notification: result.notification })
+    return reply.code(201).send({ ...receipt(result.order, result.subtotalMinor), notification: result.notification })
   })
 }

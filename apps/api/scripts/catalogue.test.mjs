@@ -23,7 +23,7 @@ const payload = {
     {
       sku: "lna-new-01-30",
       dimensions: "30 x 30 cm",
-      price: 45,
+      priceMinor: 4500,
       active: true,
     },
   ],
@@ -38,8 +38,8 @@ const payload = {
 test("product validation rejects invalid pricing and ambiguous categories", () => {
   assert.equal(productInput.parse(payload).variants[0].sku, "LNA-NEW-01-30");
   for (const invalid of [
-    { ...payload, variants: [{ ...payload.variants[0], price: -1 }] },
-    { ...payload, variants: [{ ...payload.variants[0], price: 4.5 }] },
+    { ...payload, variants: [{ ...payload.variants[0], priceMinor: -1 }] },
+    { ...payload, variants: [{ ...payload.variants[0], priceMinor: 4.5 }] },
     { ...payload, variants: [{ ...payload.variants[0], sku: "bad sku" }] },
     { ...payload, material: "invalid" },
     { ...payload, categoryId: undefined },
@@ -163,7 +163,7 @@ test("product creation saves complete data, supports new categories, and handles
           url: "/products",
           payload: {
             ...payload,
-            variants: [{ ...payload.variants[0], price: -1 }],
+            variants: [{ ...payload.variants[0], priceMinor: -1 }],
           },
         })
       ).statusCode,
@@ -264,13 +264,13 @@ test("editing loads a product, saves changes, preserves slugs, and handles missi
       url: `/products/${id}`,
       payload: {
         ...payload,
-        variants: [{ ...payload.variants[0], price: 80 }],
+        variants: [{ ...payload.variants[0], priceMinor: 8000 }],
         featured: true,
       },
     });
     assert.equal(response.statusCode, 200);
     assert.equal(updated.id, id);
-    assert.equal(updated.price, 80);
+    assert.equal(updated.priceMinor, 8000);
     assert.equal(updated.featured, true);
     assert.equal(updated.translations.bs.slug, "existing-bs-url");
     assert.equal(updated.translations.en.slug, "existing-en-url");
@@ -284,7 +284,7 @@ test("editing loads a product, saves changes, preserves slugs, and handles missi
       payload: {
         ...payload,
         variants: [
-          { ...payload.variants[0], id: keptVariant, price: 90 },
+          { ...payload.variants[0], id: keptVariant, priceMinor: 9050 },
           { ...payload.variants[0], sku: "lna-new-01-40", dimensions: "40 x 40 cm" },
         ],
       },
@@ -293,7 +293,8 @@ test("editing loads a product, saves changes, preserves slugs, and handles missi
     assert.deepEqual(variantWrites.map((write) => write.op), ["delete", "update", "update", "insert"]);
     assert.equal(variantWrites[1].values.sku, keptVariant);
     assert.equal(variantWrites[2].values.id, keptVariant);
-    assert.equal(variantWrites[2].values.price, 90);
+    // Prices below a whole KM are kept: 90,50 KM.
+    assert.equal(variantWrites[2].values.priceMinor, 9050);
     assert.equal(variantWrites[3].values[0].sku, "LNA-NEW-01-40");
     assert.notEqual(variantWrites[3].values[0].id, keptVariant);
     const foreign = await app.inject({
@@ -328,7 +329,7 @@ test("editing loads a product, saves changes, preserves slugs, and handles missi
           url: `/products/${id}`,
           payload: {
             ...payload,
-            variants: [{ ...payload.variants[0], price: -1 }],
+            variants: [{ ...payload.variants[0], priceMinor: -1 }],
           },
         })
       ).statusCode,

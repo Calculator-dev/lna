@@ -12,7 +12,7 @@ import { formatPrice, OrderError, submitOrder, type Locale, isSvg } from "@/lib/
 
 export function CheckoutClient({ locale }: { locale: Locale }) {
   const router = useRouter()
-  const { items, subtotal, shippingAmount: shipping, clear } = useCart()
+  const { items, subtotalMinor: subtotal, shippingAmountMinor: shipping, clear } = useCart()
   const [submitting, setSubmitting] = useState(false)
   // One key per checkout attempt: retries after a network error or lost response reuse it, so
   // they return the order already placed rather than creating a duplicate.
@@ -147,7 +147,7 @@ export function CheckoutClient({ locale }: { locale: Locale }) {
                 {item.variantSku && <p className="mt-1 text-xs text-linen/60">SKU: {item.variantSku}</p>}
                 {item.personalization && <p className="mt-1 text-xs text-linen/60">{item.personalization}</p>}
               </div>
-              <p className="text-sm">{formatPrice(item.price * item.quantity, locale)}</p>
+              <p className="text-sm">{formatPrice(item.priceMinor * item.quantity, locale)}</p>
             </li>
           ))}
         </ul>

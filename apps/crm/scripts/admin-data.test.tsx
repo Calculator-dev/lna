@@ -28,7 +28,7 @@ test('API odgovor kontrolne ploče prikazuje se bez greške', () => {
   const html = render(client, null)
   assert.match(html, /Današnje narudžbe/)
   assert.match(html, /LNA-104251/)
-  assert.match(html, /98,00\u00a0KM/)
+  assert.match(html, /98,50\u00a0KM/)
   client.clear()
 })
 
@@ -76,7 +76,7 @@ test('obrazac za uređivanje popunjen je sačuvanim detaljima proizvoda', async 
   const { ProductForm } = await import('../src/components/product-form.tsx')
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity } } })
   client.setQueryData(['categories'], [{ id: 'category-id', translations: { bs: { name: 'Dom' } } }])
-  const product = { ...seedProducts[0], id: 'product-id', categoryId: 'category-id', price: 72, featured: true }
+  const product = { ...seedProducts[0], id: 'product-id', categoryId: 'category-id', priceMinor: 7200, featured: true }
   const html = render(client, <ProductForm product={product} onSaved={() => {}} onCancel={() => {}} />)
   assert.match(html, /Uredi proizvod/)
   assert.match(html, /Sačuvaj izmjene/)
@@ -119,10 +119,12 @@ test('nacrt proizvoda zadržava ID-eve varijanti i gradi API tijelo zahtjeva', a
   const { productPayload, variantDrafts } = await import('../src/lib/product-draft.ts')
   const variantId = '0b3f4f5e-9f55-4e0e-9d57-8f1d6a3a2c11'
   const drafts = variantDrafts({ ...seedProducts[0], id: 'product-id', variants: [
-    { id: variantId, sku: 'LNA-1', dimensions: '30 cm', price: 45, active: true, isDefault: true },
-    { id: 'product-id-default', sku: 'LNA-2', dimensions: '40 cm', price: 60, active: false, isDefault: false },
+    { id: variantId, sku: 'LNA-1', dimensions: '30 cm', priceMinor: 4550, active: true, isDefault: true },
+    { id: 'product-id-default', sku: 'LNA-2', dimensions: '40 cm', priceMinor: 6000, active: false, isDefault: false },
   ] })
   assert.equal(drafts[0].id, variantId)
+  // The price field shows KM: decimals only when there are feninga.
+  assert.deepEqual(drafts.map(draft => draft.price), ['45.50', '60'])
   assert.equal(drafts[1].id, undefined)
   assert.notEqual(drafts[0].key, drafts[1].key)
   const form = new FormData()
@@ -136,12 +138,22 @@ test('nacrt proizvoda zadržava ID-eve varijanti i gradi API tijelo zahtjeva', a
   form.set('featured', 'on')
   const body = productPayload({ form, category: 'category-id', images: [], variants: drafts, mainDimensions: '35 cm' })
   assert.equal('categoryId' in body ? body.categoryId : undefined, 'category-id')
-  assert.deepEqual(body.variants[0], { id: variantId, sku: 'LNA-1', dimensions: '35 cm', price: 45, active: true })
-  assert.deepEqual(body.variants[1], { sku: 'LNA-2', dimensions: '40 cm', price: 60, active: false })
+  assert.deepEqual(body.variants[0], { id: variantId, sku: 'LNA-1', dimensions: '35 cm', priceMinor: 4550, active: true })
+  assert.deepEqual(body.variants[1], { sku: 'LNA-2', dimensions: '40 cm', priceMinor: 6000, active: false })
   assert.equal(body.translations.bs.name, 'Monogram')
   assert.equal(body.translations.en.name, 'Monogram')
   assert.equal(body.translations.bs.care, 'Čistiti suhom krpom.')
   assert.equal(body.translations.en.care, 'Čistiti suhom krpom.')
   assert.equal(body.featured, true)
   assert.equal(body.customizable, false)
+})
+
+test('cijene upisane u KM pretvaraju se u feninge', async () => {
+  const { toMinor } = await import('../src/lib/product-draft.ts')
+  assert.equal(toMinor('45'), 4500)
+  assert.equal(toMinor('45.5'), 4550)
+  assert.equal(toMinor('45,50'), 4550)
+  assert.equal(toMinor('0.07'), 7)
+  // Anything else is sent as invalid and rejected by the API rather than guessed.
+  for (const invalid of ['', '45.505', '-1', 'abc']) assert.ok(Number.isNaN(toMinor(invalid)), invalid)
 })
