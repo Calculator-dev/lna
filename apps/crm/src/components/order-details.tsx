@@ -25,11 +25,9 @@ export function OrderDetails({ id, onBack }: { id: string; onBack: () => void })
       queryClient.invalidateQueries({ queryKey: ["order", id] })
       setDeclining(false)
       setConfirmingAccept(false)
-      setMessage(result.notification.sent
-        ? "Odluka je sačuvana i kupcu je poslan email."
-        : result.notification.reason === "not_configured"
-          ? "Odluka je sačuvana, ali email servis još nije konfigurisan."
-          : "Odluka je sačuvana, ali email nije isporučen. Pokušajte kontaktirati kupca direktno.")
+      setMessage(result.notification.queued
+        ? "Odluka je sačuvana. Email kupcu se šalje u pozadini."
+        : "Odluka je sačuvana, ali email servis još nije konfigurisan.")
     },
   })
 

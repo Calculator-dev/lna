@@ -173,9 +173,8 @@ export type OrderDecisionResult = {
     reviewedAt: string | null;
     reviewEmailSentAt: string | null;
   };
-  notification:
-    | { sent: true }
-    | { sent: false; reason: "not_configured" | "delivery_failed" };
+  // The email is sent in the background; reviewEmailSentAt shows when it went out.
+  notification: { queued: true } | { queued: false; reason: "not_configured" };
 };
 
 export type AdminInquiry = {

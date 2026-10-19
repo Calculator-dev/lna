@@ -17,10 +17,12 @@ const { createApp } = await import('../../dist/app.js')
 const { catalogueRoutes } = await import('../../dist/routes/catalogue.js')
 const { orderReviewRoutes, orderSummaries } = await import('../../dist/routes/order-review.js')
 const { adminInquiryRoutes } = await import('../../dist/routes/inquiries.js')
+const { deliverDueEmails, MAX_ATTEMPTS } = await import('../../dist/services/email-outbox.js')
+const { env } = await import('../../dist/env.js')
 const { db, pool } = await import('../../dist/db/client.js')
 
 await migrate(db, { migrationsFolder: fileURLToPath(new URL('../../drizzle', import.meta.url)) })
-await pool.query('TRUNCATE order_items, orders, customers, media_assets, product_variants, products, categories, inquiries')
+await pool.query('TRUNCATE email_outbox, order_items, orders, customers, media_assets, product_variants, products, categories, inquiries')
 
 // The admin routes without Supabase sign-in, which isn't what these tests are about.
 async function adminApp() {
@@ -181,5 +183,62 @@ test('admin lists page through every row once, newest first, even with equal tim
     assert.equal((await admin.inject('/inquiries?limit=500')).statusCode, 400)
   } finally {
     await admin.close()
+  }
+})
+
+test('emails are queued with their change, retried with backoff, and sent once', async () => {
+  const quiet = { warn() {}, error() {} }
+  const originalFetch = globalThis.fetch
+  Object.assign(env, { RESEND_API_KEY: 'test-key', ORDER_EMAIL_FROM: 'shop@example.com', INQUIRY_NOTIFY_EMAIL: 'shop@example.com' })
+  const sent = []
+  let resendUp = false
+  globalThis.fetch = async (url, init) => {
+    assert.equal(url, 'https://api.resend.com/emails')
+    sent.push(JSON.parse(init.body))
+    return new Response('{}', { status: resendUp ? 200 : 503 })
+  }
+  try {
+    const { rows: [product] } = await pool.query('SELECT id FROM products LIMIT 1')
+    const placed = await app.inject({ method: 'POST', url: '/public/orders', payload: { locale: 'bs', customer, shipping, items: [{ productId: product.id, quantity: 1 }] } })
+    assert.equal(placed.statusCode, 201)
+    assert.deepEqual(placed.json().notification, { queued: true })
+    assert.equal(sent.length, 0, 'the request itself sends nothing')
+    const { rows: [order] } = await pool.query('SELECT id FROM orders WHERE order_number = $1', [placed.json().orderNumber])
+
+    // A failed order queues nothing: the email rolls back with it.
+    const { rows: [before] } = await pool.query('SELECT count(*)::int AS n FROM email_outbox')
+    assert.equal((await app.inject({ method: 'POST', url: '/public/orders', payload: { locale: 'bs', customer, shipping, items: [{ productId: '00000000-0000-4000-8000-000000000000', quantity: 1 }] } })).statusCode, 400)
+    assert.equal((await pool.query('SELECT count(*)::int AS n FROM email_outbox')).rows[0].n, before.n)
+
+    // Provider down: the attempt is recorded and the next one waits a minute.
+    assert.equal(await deliverDueEmails(quiet), 1)
+    const failed = (await pool.query("SELECT attempts, last_error, next_attempt_at > now() + interval '50 seconds' AS later FROM email_outbox WHERE order_id = $1", [order.id])).rows[0]
+    assert.deepEqual(failed, { attempts: 1, last_error: 'delivery_failed', later: true })
+    assert.equal(await deliverDueEmails(quiet), 0, 'not due yet')
+
+    // Provider back: sent once, and the order shows when.
+    resendUp = true
+    await pool.query('UPDATE email_outbox SET next_attempt_at = now()')
+    assert.equal(await deliverDueEmails(quiet), 1)
+    assert.equal(sent.length, 2)
+    assert.match(sent[1].subject, /Primili smo vašu narudžbu/)
+    const delivered = (await pool.query('SELECT o.confirmation_email_sent_at IS NOT NULL AS stamped, e.sent_at IS NOT NULL AS done FROM orders o JOIN email_outbox e ON e.order_id = o.id WHERE o.id = $1', [order.id])).rows[0]
+    assert.deepEqual(delivered, { stamped: true, done: true })
+
+    // Two workers at once (e.g. old and new instance during a deploy) never send one email twice.
+    for (let index = 0; index < 3; index++) {
+      assert.equal((await app.inject({ method: 'POST', url: '/public/inquiries', payload: { fullName: `Kupac ${index}`, email: 'a@example.com', brief: 'Upit za izradu po mjeri.' } })).statusCode, 201)
+    }
+    sent.length = 0
+    const passes = await Promise.all([deliverDueEmails(quiet), deliverDueEmails(quiet)])
+    assert.equal(passes[0] + passes[1], 3)
+    assert.equal(sent.length, 3)
+
+    // After the last attempt an email is left alone.
+    await pool.query("INSERT INTO email_outbox (kind, payload, attempts) VALUES ('inquiry_notification', '{}', $1)", [MAX_ATTEMPTS])
+    assert.equal(await deliverDueEmails(quiet), 0)
+  } finally {
+    globalThis.fetch = originalFetch
+    Object.assign(env, { RESEND_API_KEY: undefined, ORDER_EMAIL_FROM: undefined, INQUIRY_NOTIFY_EMAIL: undefined })
   }
 })

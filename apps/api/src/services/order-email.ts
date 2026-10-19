@@ -1,6 +1,6 @@
 import { env } from "../env.js"
 
-type DecisionEmail = {
+export type DecisionEmail = {
   to: string
   fullName: string
   orderNumber: string
@@ -9,7 +9,7 @@ type DecisionEmail = {
   reason?: string
 }
 
-type ConfirmationEmail = {
+export type ConfirmationEmail = {
   to: string
   fullName: string
   orderNumber: string
@@ -19,7 +19,7 @@ type ConfirmationEmail = {
   shipping: { address: string; city: string; postalCode?: string; country: string }
 }
 
-type InquiryNotification = {
+export type InquiryNotification = {
   locale: "bs" | "en"
   fullName: string
   email: string

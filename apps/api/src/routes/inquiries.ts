@@ -3,7 +3,7 @@ import { desc, eq } from "drizzle-orm"
 import { z } from "zod"
 import { db } from "../db/client.js"
 import { inquiries } from "../db/schema.js"
-import { sendInquiryNotification } from "../services/order-email.js"
+import { queueEmail, wakeEmailWorker } from "../services/email-outbox.js"
 import { publicFormRateLimit } from "../lib/rate-limits.js"
 import { beforeCursor, cursorTime, page, pageQuery } from "../lib/pagination.js"
 
@@ -23,9 +23,11 @@ export const inquiryInput = z.object({
 export const publicInquiryRoutes: FastifyPluginAsync = async app => {
   app.post("/inquiries", { config: { rateLimit: publicFormRateLimit } }, async (request, reply) => {
     const input = inquiryInput.parse(request.body)
-    const [inquiry] = await db.insert(inquiries).values(input).returning({ id: inquiries.id, createdAt: inquiries.createdAt })
-    const notification = await sendInquiryNotification(input)
-    if (!notification.sent && notification.reason === "delivery_failed") request.log.warn({ inquiryId: inquiry.id }, "Inquiry notification email failed")
+    const { inquiry, notification } = await db.transaction(async tx => {
+      const [inquiry] = await tx.insert(inquiries).values(input).returning({ id: inquiries.id })
+      return { inquiry, notification: await queueEmail(tx, { kind: "inquiry_notification", payload: input }) }
+    })
+    if (notification.queued) wakeEmailWorker()
     return reply.code(201).send({ ok: true, id: inquiry.id })
   })
 }

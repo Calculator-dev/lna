@@ -6,7 +6,7 @@ import { randomBytes } from "node:crypto"
 import { inArray, sql, eq, and, isNotNull } from "drizzle-orm"
 import { db } from "../db/client.js"
 import { categories, products, customers, orders, orderItems, mediaAssets, productVariants } from "../db/schema.js"
-import { sendOrderConfirmationEmail } from "../services/order-email.js"
+import { queueEmail, wakeEmailWorker } from "../services/email-outbox.js"
 import { shippingFor } from "../lib/shipping.js"
 import { publicVariants } from "../lib/variants.js"
 import { publicInquiryRoutes } from "./inquiries.js"
@@ -194,12 +194,16 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
         dimensions: line.variant?.dimensions ?? line.product.dimensions,
         quantity: line.item.quantity, unitPrice: line.unitPrice, personalization: line.item.personalization,
       })))
-      return {
-        order,
-        subtotal,
+      const notification = await queueEmail(tx, { kind: "order_confirmation", orderId: order.id, payload: {
+        to: payload.customer.email,
+        fullName: payload.customer.fullName,
+        orderNumber: order.orderNumber,
+        locale: payload.locale,
+        items: lines.map(line => ({ name: line.name, quantity: line.item.quantity, unitPrice: line.unitPrice })),
         shippingAmount,
-        emailItems: lines.map(line => ({ name: line.name, quantity: line.item.quantity, unitPrice: line.unitPrice })),
-      }
+        shipping: payload.shipping,
+      } })
+      return { order, subtotal, notification }
     })
 
     let result: Awaited<ReturnType<typeof placeOrder>>
@@ -214,22 +218,7 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
       }
       throw error
     }
-    const notification = await sendOrderConfirmationEmail({
-      to: payload.customer.email,
-      fullName: payload.customer.fullName,
-      orderNumber: result.order.orderNumber,
-      locale: payload.locale,
-      items: result.emailItems,
-      shippingAmount: result.shippingAmount,
-      shipping: payload.shipping,
-    })
-    if (notification.sent) {
-      try {
-        await db.update(orders).set({ confirmationEmailSentAt: new Date() }).where(eq(orders.id, result.order.id))
-      } catch {
-        request.log.warn({ orderId: result.order.id }, "Order confirmation sent but timestamp could not be saved")
-      }
-    }
-    return reply.code(201).send({ ...receipt(result.order, result.subtotal), notification })
+    if (result.notification.queued) wakeEmailWorker()
+    return reply.code(201).send({ ...receipt(result.order, result.subtotal), notification: result.notification })
   })
 }

@@ -9,7 +9,9 @@ const inquiry = { fullName: 'Test Customer', email: 'test@example.com', brief: '
 test('public form endpoints are rate limited per client', async () => {
   const app = createApp()
   const original = db.insert
+  const originalTransaction = db.transaction
   db.insert = () => ({ values: () => ({ returning: async () => [{ id: 'id', createdAt: new Date() }] }) })
+  db.transaction = async callback => callback(db)
   try {
     for (let attempt = 0; attempt < 10; attempt++) {
       assert.equal((await app.inject({ method: 'POST', url: '/public/inquiries', payload: inquiry })).statusCode, 201)
@@ -20,6 +22,7 @@ test('public form endpoints are rate limited per client', async () => {
     assert.equal((await app.inject('/health')).statusCode, 200)
   } finally {
     db.insert = original
+    db.transaction = originalTransaction
     await app.close()
   }
 })

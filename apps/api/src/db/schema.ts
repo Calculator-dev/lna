@@ -10,6 +10,7 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const localeEnum = pgEnum("locale", ["bs", "en"]);
 export const materialEnum = pgEnum("material", [
@@ -208,3 +209,24 @@ export const inquiries = pgTable("inquiries", {
     .defaultNow()
     .notNull(),
 }).enableRLS();
+
+// Emails waiting to be sent, written in the same transaction as the order, decision or inquiry
+// they belong to and delivered with retries by the API's email worker (services/email-outbox.ts).
+export const emailOutbox = pgTable("email_outbox", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  kind: varchar("kind", { length: 40 }).notNull(),
+  // The order whose confirmationEmailSentAt / reviewEmailSentAt is set once it is sent.
+  orderId: uuid("order_id").references(() => orders.id),
+  payload: jsonb("payload").notNull(),
+  attempts: integer("attempts").notNull().default(0),
+  nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  sentAt: timestamp("sent_at", { withTimezone: true }),
+  lastError: text("last_error"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+}, (table) => [
+  index("email_outbox_due_idx").on(table.nextAttemptAt).where(sql`${table.sentAt} is null`),
+]).enableRLS();

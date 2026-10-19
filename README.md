@@ -58,6 +58,11 @@ In production:
   `scripts/start-production.mjs` configure this themselves (`STOREFRONT_REVALIDATE_URL`
   and `REVALIDATE_SECRET` on both apps); only a setup that runs the apps some other way
   needs to set them. Without them, changes still appear within five minutes.
+- Order confirmations, decision emails and inquiry notifications are queued in the
+  `email_outbox` table together with the change they belong to, and the API sends them in
+  the background, retrying for about four hours if Resend fails. Nothing is queued while
+  `RESEND_API_KEY`/`ORDER_EMAIL_FROM` (or `INQUIRY_NOTIFY_EMAIL` for inquiries) are unset.
+  Rows with `sent_at` empty and `attempts` at 8 were given up on; `last_error` says why.
 - The CRM is a single-page app: configure the host to serve `index.html` for all
   paths (for example `/orders/<id>`).
 

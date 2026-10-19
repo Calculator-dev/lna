@@ -10,6 +10,9 @@ const payload = { locale: 'en', fullName: 'Lejla H.', email: 'lejla@example.com'
 test('inquiries are validated, saved, and only listed for admins', async () => {
   const app = createApp()
   const original = db.insert
+  const originalTransaction = db.transaction
+  // The inquiry is saved in a transaction with its queued email.
+  db.transaction = async callback => callback(db)
   let saved
   db.insert = table => ({ values: values => ({ returning: async () => {
     assert.equal(table, inquiries)
@@ -31,6 +34,7 @@ test('inquiries are validated, saved, and only listed for admins', async () => {
     assert.equal((await app.inject('/admin/inquiries')).statusCode, 401)
   } finally {
     db.insert = original
+    db.transaction = originalTransaction
     await app.close()
   }
 })

@@ -3,7 +3,7 @@ import { and, desc, eq, sql } from "drizzle-orm"
 import { z } from "zod"
 import { db } from "../db/client.js"
 import { customers, orderItems, orders } from "../db/schema.js"
-import { sendOrderDecisionEmail } from "../services/order-email.js"
+import { queueEmail, wakeEmailWorker } from "../services/email-outbox.js"
 import { beforeCursor, cursorTime, page, pageQuery } from "../lib/pagination.js"
 
 const params = z.object({ id: z.string().uuid() })
@@ -89,29 +89,23 @@ export const orderReviewRoutes: FastifyPluginAsync = async app => {
     if (existing.status !== "submitted") return reply.code(409).send({ message: "Order has already been reviewed" })
 
     const now = new Date()
-    const [updated] = await db.update(orders).set({
-      status: input.decision === "accept" ? "confirmed" : "declined",
-      paymentStatus: input.decision === "decline" ? "cancelled" : "pending_manual",
-      declineReason: input.decision === "decline" ? input.reason : null,
-      reviewedAt: now, reviewedBy: request.adminUser?.id, reviewedByEmail: request.adminUser?.email, updatedAt: now,
-    }).where(and(eq(orders.id, id), eq(orders.status, "submitted"))).returning()
-    if (!updated) return reply.code(409).send({ message: "Order has already been reviewed" })
-
-    const email = await sendOrderDecisionEmail({
-      to: existing.email, fullName: existing.fullName, orderNumber: existing.orderNumber,
-      locale: existing.locale, decision: input.decision,
-      reason: input.decision === "decline" ? input.reason : undefined,
+    const result = await db.transaction(async tx => {
+      const [updated] = await tx.update(orders).set({
+        status: input.decision === "accept" ? "confirmed" : "declined",
+        paymentStatus: input.decision === "decline" ? "cancelled" : "pending_manual",
+        declineReason: input.decision === "decline" ? input.reason : null,
+        reviewedAt: now, reviewedBy: request.adminUser?.id, reviewedByEmail: request.adminUser?.email, updatedAt: now,
+      }).where(and(eq(orders.id, id), eq(orders.status, "submitted"))).returning()
+      if (!updated) return undefined
+      const notification = await queueEmail(tx, { kind: "order_decision", orderId: id, payload: {
+        to: existing.email, fullName: existing.fullName, orderNumber: existing.orderNumber,
+        locale: existing.locale, decision: input.decision,
+        reason: input.decision === "decline" ? input.reason : undefined,
+      } })
+      return { order: updated, notification }
     })
-    if (email.sent) {
-      // The decision is already saved, so a failure here must not turn the response into an error.
-      const sentAt = new Date()
-      try {
-        await db.update(orders).set({ reviewEmailSentAt: sentAt }).where(eq(orders.id, id))
-        updated.reviewEmailSentAt = sentAt
-      } catch {
-        request.log.warn({ orderId: id }, "Order decision email sent but timestamp could not be saved")
-      }
-    }
-    return { order: updated, notification: email }
+    if (!result) return reply.code(409).send({ message: "Order has already been reviewed" })
+    if (result.notification.queued) wakeEmailWorker()
+    return result
   })
 }
