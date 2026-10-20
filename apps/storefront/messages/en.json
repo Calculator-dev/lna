@@ -350,7 +350,7 @@
       },
       {
         "title": "Analytics and advertising",
-        "body": "With your consent we use Google Tag Manager and Google Analytics to see which pages and products interest visitors, and cookies to measure advertising. Without consent these cookies are not set. You can change your choice at any time through “Cookie settings” at the bottom of the page."
+        "body": "With your consent we use Google Tag Manager and Google Analytics to see which pages and products interest visitors, and the Meta Pixel (Facebook and Instagram) and cookies to measure advertising. Without consent these cookies are not set and the Meta Pixel is not loaded. You can change your choice at any time through “Cookie settings” at the bottom of the page."
       },
       {
         "title": "Where your visit came from",

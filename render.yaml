@@ -43,6 +43,10 @@ services:
       # Read at build time: redeploy after changing it.
       - key: NEXT_PUBLIC_GTM_ID
         value: GTM-5DL8TGR7
+      # Meta Pixel for Facebook/Instagram ads, loaded only after cookie consent. Public.
+      # Read at build time: redeploy after changing it.
+      - key: NEXT_PUBLIC_META_PIXEL_ID
+        value: "1118884090897694"
       # The CRM's address, e.g. https://lna-crm.onrender.com (the shop itself needs no CORS entry).
       - key: CORS_ORIGINS
         sync: false

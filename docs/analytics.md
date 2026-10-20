@@ -1,15 +1,15 @@
 # Analytics and campaigns
 
-The storefront loads **Google Tag Manager (GTM)**. Google Analytics 4 (GA4), and later any ad
-tags (Google Ads, Meta Pixel, TikTok), are configured inside GTM, so adding one needs no code
-change. Two things are tracked:
+The storefront loads **Google Tag Manager (GTM)**. Google Analytics 4 (GA4), and later other ad
+tags (Google Ads, TikTok), are configured inside GTM, so adding one needs no code change. The
+**Meta Pixel** is built in instead (see below), so it can wait for consent. Two things are tracked:
 
 - **GA4 ecommerce events**, pushed to GTM's data layer (`apps/storefront/lib/analytics.ts`).
 - **Where each order and inquiry came from** (`utm_*` tags, `gclid`, `fbclid`, referring site),
   saved in the shop's own database and shown in the CRM under "Izvor posjete". Ad blockers
   don't affect this, so it's the reliable answer to "which campaign brought this order?".
 
-Nothing is loaded and no banner is shown until `NEXT_PUBLIC_GTM_ID` is set.
+Nothing is loaded and no banner is shown until `NEXT_PUBLIC_GTM_ID` or `NEXT_PUBLIC_META_PIXEL_ID` is set.
 
 ## Consent
 
@@ -81,3 +81,26 @@ The CRM shows the last campaign a customer arrived from within 30 days of their 
 
 Adding an ad platform later (Google Ads conversion, Meta Pixel) is a new tag in GTM using the
 same events; set its consent settings to require `ad_storage`.
+
+## Meta Pixel (Facebook and Instagram ads)
+
+Set `NEXT_PUBLIC_META_PIXEL_ID` (`render.yaml` has `1118884090897694`; redeploy after a change).
+The pixel's script is only loaded after the visitor clicks "Prihvati", and "Odbij" later revokes
+it for the rest of the visit, so don't also add the pixel in GTM or paste Meta's snippet into the
+page: that would load it before consent and count every event twice. It sends:
+
+| Meta event | When |
+|---|---|
+| `PageView` | every page, including client-side navigation |
+| `ViewContent` | product page |
+| `AddToCart` | item added to the cart |
+| `InitiateCheckout` | checkout page with items in the cart |
+| `Purchase` | order submitted; the order number is the event ID, so Meta drops duplicates |
+| `Lead` | custom-work inquiry sent |
+
+Events use the variant SKU as `content_ids` and KM amounts with the currency `BAM`. In
+*Events Manager → Data sources → the pixel → Test events*, open the shop, accept cookies and the
+events show up within seconds. For campaigns, choose the *Sales* objective with the
+*Purchase* event (or *Leads* with *Lead* for custom work). As with GA4, a `Purchase` is an
+order placed, not yet confirmed or paid.
+
