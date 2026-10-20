@@ -71,7 +71,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
           <Reveal y={24} delay={0.08} className="relative mx-auto w-full max-w-140">
             <div className="absolute -right-2 top-10 bottom-0 left-10 rounded-[2.5rem] bg-primary sm:-right-6 md:-right-10" aria-hidden />
             <div className="arch relative aspect-4/5 overflow-hidden bg-secondary shadow-[0_40px_80px_-40px_rgba(43,29,20,0.6)]">
-              <Image src="/images/hero-tray-lily.jpg" alt={t("hero.imageAlt")} fill priority sizes="(min-width: 1024px) 560px, 90vw" className="object-cover" />
+              <Image src="/images/hero-workshop.jpg" alt={t("hero.imageAlt")} fill priority sizes="(min-width: 1024px) 560px, 90vw" className="object-cover" />
             </div>
             <Stamp className="absolute -left-4 bottom-10 h-32 w-32 md:-left-10 md:h-36 md:w-36" />
           </Reveal>
