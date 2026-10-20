@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import sharp from "sharp";
 process.env.DATABASE_URL = "postgresql://unused:unused@localhost/unused";
-const { prepareImage, MAX_IMAGE_BYTES } =
+const { prepareImage, catalogJpeg, MAX_IMAGE_BYTES } =
   await import("../dist/services/image-processing.js");
 const { productInput } = await import("../dist/lib/product-input.js");
 
@@ -26,6 +26,18 @@ test("uploads decode and resize real images; reject SVG, corrupt files and overs
   await assert.rejects(() => prepareImage(Buffer.alloc(MAX_IMAGE_BYTES + 1)), {
     statusCode: 413,
   });
+});
+
+test("catalog copies are JPEG with transparency flattened and size capped", async () => {
+  const webp = await sharp({
+    create: { width: 2400, height: 1200, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+  })
+    .webp()
+    .toBuffer();
+  const meta = await sharp(await catalogJpeg(webp)).metadata();
+  assert.equal(meta.format, "jpeg");
+  assert.equal(meta.width, 1600);
+  assert.equal(meta.height, 800);
 });
 
 test("image input rejects multiple primary photos and duplicate attachments", () => {

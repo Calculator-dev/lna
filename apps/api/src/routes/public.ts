@@ -1,5 +1,6 @@
 import { getPublicCatalogue } from "../services/public-catalogue.js"
 import { imageUrl } from "../services/backblaze.js"
+import { catalogJpeg } from "../services/image-processing.js"
 import type { FastifyPluginAsync } from "fastify"
 import { z } from "zod"
 import { randomBytes } from "node:crypto"
@@ -45,6 +46,20 @@ export const publicRoutes: FastifyPluginAsync = async (app) => {
     if (!asset) return reply.code(404).send({ message: "Image not found" })
     reply.header("Cache-Control", "no-store")
     return reply.redirect(await imageUrl(asset.storageKey))
+  })
+  // JPEG copies for Meta and Google product catalogs, e.g. /public/catalog-images/<id>.jpg.
+  // Stored photos are WebP, which those catalogs reject.
+  app.get("/catalog-images/:file", async (request, reply) => {
+    const match = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.jpg$/i.exec((request.params as { file: string }).file)
+    if (!match) return reply.code(404).send({ message: "Image not found" })
+    const [asset] = await db.select().from(mediaAssets).where(and(eq(mediaAssets.id, match[1]!), isNotNull(mediaAssets.productId))).limit(1)
+    if (!asset) return reply.code(404).send({ message: "Image not found" })
+    const source = await fetch(await imageUrl(asset.storageKey), { signal: AbortSignal.timeout(15000) })
+    if (!source.ok) return reply.code(502).send({ message: "Image unavailable" })
+    const jpeg = await catalogJpeg(Buffer.from(await source.arrayBuffer()))
+    // Photos never change under the same ID, so catalog crawlers may cache them.
+    reply.header("Cache-Control", "public, max-age=86400")
+    return reply.type("image/jpeg").send(jpeg)
   })
   app.get("/categories", async (request) => {
     const locale = localeSchema.parse((request.query as { locale?: string }).locale)

@@ -12,3 +12,12 @@ export async function prepareImage(body: Buffer) {
     throw Object.assign(new Error("Choose a valid, non-animated JPEG, PNG, or WebP image under 40 megapixels"), { statusCode: 400 })
   }
 }
+
+/** JPEG copy of a stored (WebP) product photo for ad catalogs, which don't accept WebP. */
+export async function catalogJpeg(body: Buffer) {
+  return sharp(body, { limitInputPixels: 40000000 })
+    .resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true })
+    .flatten({ background: "#ffffff" })
+    .jpeg({ quality: 88, mozjpeg: true })
+    .toBuffer()
+}
