@@ -5,7 +5,7 @@ export type Locale = "bs" | "en"
 export type LocalizedField = Record<Locale, string>
 
 /** Product materials. Keep in sync with `materialEnum` in the API schema and the CRM product form. */
-export const materials = ["wood", "resin", "mixed"] as const
+export const materials = ["wood", "resin", "mdf", "mixed"] as const
 
 export type Material = (typeof materials)[number]
 

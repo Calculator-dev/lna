@@ -34,6 +34,8 @@
   --honey: #c98a3b;
   --honey-soft: #efdcbf;
   --clay: #e7d6c3;
+  --mdf: #8c7b69;
+  --mdf-soft: #e8e1d7;
   --linen: #efe4d4;
   --sidebar: var(--background);
   --sidebar-foreground: var(--foreground);
@@ -74,6 +76,8 @@
   --color-honey: var(--honey);
   --color-honey-soft: var(--honey-soft);
   --color-clay: var(--clay);
+  --color-mdf: var(--mdf);
+  --color-mdf-soft: var(--mdf-soft);
   --color-linen: var(--linen);
   --radius-sm: calc(var(--radius) - 6px);
   --radius-md: calc(var(--radius) - 3px);

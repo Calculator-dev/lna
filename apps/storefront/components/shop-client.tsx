@@ -141,7 +141,7 @@ export function ShopClient({ locale, products, categories }: { locale: Locale; p
               {activeFilterCount > 0 && <button type="button" onClick={resetFilters} className="btn-ink mt-6">{t("filters.clearFilters")}</button>}
             </div>
           ) : (
-            <div className={cn(view === "grid" ? "grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 md:gap-5 xl:grid-cols-3" : "grid gap-4")}>
+            <div className={cn(view === "grid" ? "grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 xl:grid-cols-4" : "grid gap-4")}>
               {filtered.map((product, index) => <ProductCard key={product.id} locale={locale} product={product} layout={view} priority={index < 2} />)}
             </div>
           )}

@@ -358,6 +358,7 @@ export function ProductForm({
                   <option value="wood">Drvo</option>
                   <option value="resin">Epoksidna smola</option>
                   <option value="mixed">Kombinovani materijali</option>
+                  <option value="mdf">MDF</option>
                 </select>
               </Field>
             </Card>

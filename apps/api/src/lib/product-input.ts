@@ -29,7 +29,7 @@ export const productInput = z
     categoryId: z.string().uuid().optional(),
     newCategory: localized.optional(),
     type: z.enum(["standard", "custom"]),
-    material: z.enum(["wood", "resin", "mixed"]),
+    material: z.enum(["wood", "resin", "mixed", "mdf"]),
     variants: z.array(variantInput).min(1).max(20),
     leadTime: localized,
     stockLabel: localized,

@@ -18,6 +18,7 @@ export const materialEnum = pgEnum("material", [
   "wood",
   "resin",
   "mixed",
+  "mdf",
 ]);
 export const productTypeEnum = pgEnum("product_type", ["standard", "custom"]);
 export const orderStatusEnum = pgEnum("order_status", [

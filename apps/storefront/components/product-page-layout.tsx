@@ -101,7 +101,7 @@ export function ProductPageLayout({ locale, product, related }: { locale: Locale
       {related.length > 0 && (
         <section className="mx-auto max-w-375 px-4 pb-20 md:px-6 md:pb-28">
           <h2 className="font-serif text-5xl leading-none md:text-6xl">{t("related")}</h2>
-          <div className="mt-10 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 md:gap-5 lg:grid-cols-3">
+          <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
             {related.map((item) => <ProductCard key={item.id} locale={locale} product={item} />)}
           </div>
         </section>

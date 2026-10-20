@@ -27,6 +27,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
     { href: "/shop", label: t("nav.allProducts") },
     { href: "/shop?material=wood", label: common("materials.wood") },
     { href: "/shop?material=resin", label: common("materials.resin") },
+    { href: "/shop?material=mdf", label: common("materials.mdf") },
     { href: "/shop?type=custom", label: t("nav.customizable") },
     { href: "/custom", label: t("nav.customWork") },
     { href: "/about", label: t("nav.about") },
