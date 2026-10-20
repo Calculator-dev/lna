@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl"
 import { AttributionTracker } from "@/components/analytics/attribution-tracker"
 import { ConsentBanner } from "@/components/analytics/consent-banner"
 import { ConsentDefaults, GoogleTagManager } from "@/components/analytics/google-tag-manager"
+import { MetaPixel } from "@/components/analytics/meta-pixel"
 import { CartProvider } from "@/components/cart-provider"
 import { SiteShell } from "@/components/site-shell"
 import { Toaster } from "@/components/ui/sonner"
@@ -65,6 +66,7 @@ export default async function RootLayout({
         </NextIntlClientProvider>
         <AttributionTracker />
         <GoogleTagManager />
+        <MetaPixel />
       </body>
     </html>
   )

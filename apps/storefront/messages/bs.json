@@ -350,7 +350,7 @@
       },
       {
         "title": "Analitika i oglasi",
-        "body": "Uz vaš pristanak koristimo Google Tag Manager i Google Analytics kako bismo vidjeli koje stranice i proizvodi zanimaju posjetioce, te kolačiće za mjerenje oglasa. Bez pristanka se ovi kolačići ne postavljaju. Izbor možete promijeniti bilo kada putem linka „Postavke kolačića” u dnu stranice."
+        "body": "Uz vaš pristanak koristimo Google Tag Manager i Google Analytics kako bismo vidjeli koje stranice i proizvodi zanimaju posjetioce, te Meta Pixel (Facebook i Instagram) i kolačiće za mjerenje oglasa. Bez pristanka se ovi kolačići ne postavljaju i Meta Pixel se ne učitava. Izbor možete promijeniti bilo kada putem linka „Postavke kolačića” u dnu stranice."
       },
       {
         "title": "Izvor posjete",

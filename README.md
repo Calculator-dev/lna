@@ -37,7 +37,7 @@ Other root commands, also run in CI (`.github/workflows/ci.yml`):
 | --- | --- | --- |
 | API | `apps/api/.env` | `DATABASE_URL`, `SUPABASE_*`, `BACKBLAZE_*`, `RESEND_API_KEY`, `ORDER_EMAIL_FROM`, `INQUIRY_NOTIFY_EMAIL`, `CORS_ORIGINS`, `TRUST_PROXY` |
 | CRM | `apps/crm/.env.local` | `VITE_API_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` |
-| Storefront | `apps/storefront/.env.local` | `API_URL`, `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_GTM_ID` (optional, see [docs/analytics.md](docs/analytics.md)) |
+| Storefront | `apps/storefront/.env.local` | `API_URL`, `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_GTM_ID` and `NEXT_PUBLIC_META_PIXEL_ID` (optional, see [docs/analytics.md](docs/analytics.md)) |
 
 Each app has a `.env.example`. Environment files are git-ignored. Never put a
 database URL, service-role key or other secret in a `VITE_` or `NEXT_PUBLIC_` variable.

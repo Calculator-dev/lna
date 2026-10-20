@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useTranslations } from "next-intl"
-import { gtmId } from "@/lib/analytics"
+import { trackingEnabled } from "@/lib/analytics"
 import { readConsent, saveConsent, type ConsentChoice } from "@/lib/consent"
 import { buildPath, type Locale } from "@/lib/products"
 
@@ -15,7 +15,7 @@ export function ConsentBanner({ locale }: { locale: Locale }) {
   const t = useTranslations("consent")
 
   useEffect(() => {
-    if (!gtmId) return
+    if (!trackingEnabled) return
     if (!readConsent()) setOpen(true)
     const reopen = () => setOpen(true)
     window.addEventListener(OPEN_CONSENT_EVENT, reopen)
@@ -44,6 +44,6 @@ export function ConsentBanner({ locale }: { locale: Locale }) {
 /** Footer link that reopens the banner. Hidden when analytics isn't configured. */
 export function ConsentSettingsLink({ className }: { className?: string }) {
   const t = useTranslations("consent")
-  if (!gtmId) return null
+  if (!trackingEnabled) return null
   return <button type="button" className={className} onClick={() => window.dispatchEvent(new Event(OPEN_CONSENT_EVENT))}>{t("settings")}</button>
 }
