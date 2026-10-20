@@ -7,6 +7,7 @@
     "materials": {
       "wood": "Drvo",
       "resin": "Epoksidna smola",
+      "mdf": "MDF",
       "mixed": "Kombinovano"
     },
     "productTypes": {
@@ -67,7 +68,8 @@
   },
   "home": {
     "hero": {
-      "imageAlt": "LNA kreativna sehara ručno izrađene dekoracije u enterijeru",
+      "imageAlt": "Ručno izrađena tacna sa mandala uzorkom, LNA kreativna sehara",
+      "badge": "Novo u ponudi: ručno izrađene tacne",
       "eyebrow": "Dizajnirano i izrađeno u Sarajevu",
       "title": "Vaša ideja, ručno izrađena.",
       "description": "Dekoracije, pokloni i uspomene izrađeni s pažnjom — od prve ideje do gotovog komada.",
@@ -76,6 +78,9 @@
     },
     "categories": {
       "title": "Šta želite da napravimo?",
+      "description": "Trenutno su u ponudi tacne. Ostale kategorije pripremamo i uskoro ih dodajemo u webshop — moći ćete ih pretraživati i naručiti čim stignu.",
+      "available": "Dostupno",
+      "comingSoon": "Uskoro",
       "tiles": {
         "rahle": "Rahle",
         "mahrame": "Mahrame",
@@ -101,7 +106,7 @@
       "title": "Napravljeno da bude dio vaših trenutaka.",
       "tiles": {
         "space": "Detalji koji mijenjaju prostor",
-        "name": "Ime napravljeno samo za vas",
+        "details": "Detalji završeni rukom",
         "memories": "Uspomene koje ostaju blizu",
         "celebrations": "Trenuci vrijedni slavlja"
       }
@@ -183,6 +188,7 @@
       "materialText": {
         "wood": "Pažljivo odabrano i ručno obrađeno drvo.",
         "resin": "Epoksidna smola lijevana ručno, sa dubokim sjajem.",
+        "mdf": "Čvrst MDF, precizno izrezan i ručno obrađen.",
         "mixed": "Kombinacija materijala odabrana za poseban izgled."
       }
     },

@@ -7,6 +7,7 @@
     "materials": {
       "wood": "Wood",
       "resin": "Epoxy resin",
+      "mdf": "MDF",
       "mixed": "Mixed materials"
     },
     "productTypes": {
@@ -67,7 +68,8 @@
   },
   "home": {
     "hero": {
-      "imageAlt": "LNA kreativna sehara handmade decor in an interior",
+      "imageAlt": "Handmade tray with a mandala pattern by LNA kreativna sehara",
+      "badge": "New in the shop: handmade trays",
       "eyebrow": "Designed and made in Sarajevo",
       "title": "Your idea, made by hand.",
       "description": "Decor, gifts, and keepsakes made with care — from the first idea to the finished piece.",
@@ -76,6 +78,9 @@
     },
     "categories": {
       "title": "What would you like us to make?",
+      "description": "Trays are available now. We’re preparing the other categories and adding them to the shop soon — you’ll be able to search and order them as soon as they arrive.",
+      "available": "Available now",
+      "comingSoon": "Coming soon",
       "tiles": {
         "rahle": "Rahle",
         "mahrame": "Mahrama cloths",
@@ -101,7 +106,7 @@
       "title": "Made to become part of your moments.",
       "tiles": {
         "space": "Details that change a room",
-        "name": "A name made just for you",
+        "details": "Details finished by hand",
         "memories": "Memories kept close",
         "celebrations": "Moments worth celebrating"
       }
@@ -183,6 +188,7 @@
       "materialText": {
         "wood": "Carefully selected, hand-finished wood.",
         "resin": "Hand-poured epoxy resin with a deep shine.",
+        "mdf": "Sturdy MDF, precisely cut and finished by hand.",
         "mixed": "A combination of materials chosen for a special look."
       }
     },

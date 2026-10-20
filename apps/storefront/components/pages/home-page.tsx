@@ -1,6 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, ArrowUpRight } from "lucide-react"
+import { ArrowRight, ArrowUpRight, Sparkles } from "lucide-react"
 import { getTranslations } from "next-intl/server"
 import { ProductCard } from "@/components/product-card"
 import { Reveal } from "@/components/reveal"
@@ -9,26 +9,27 @@ import { materialStyle } from "@/lib/material-style"
 import { buildPath, siteName, type Locale } from "@/lib/products"
 import { cn } from "@/lib/utils"
 
+// Only trays are in the shop for now; the rest are announced as coming soon.
 const categoryTiles = [
-  { image: "/images/product-topper.jpg", key: "rahle" },
-  { image: "/images/product-wall-decor.jpg", key: "mahrame" },
-  { image: "/images/product-photo-stand.jpg", key: "trays" },
-  { image: "/images/hero-lifestyle.jpg", key: "decorativeSets" },
-  { image: "/images/hero-monogram.jpg", key: "flowers" },
-  { image: "/images/product-name-sign.jpg", key: "scarfBouquets" },
-  { image: "/images/product-keychain.jpg", key: "paintedScarves" },
+  { key: "trays", image: "/images/category-trays.jpg" },
+  { key: "rahle" },
+  { key: "mahrame" },
+  { key: "decorativeSets" },
+  { key: "flowers" },
+  { key: "scarfBouquets" },
+  { key: "paintedScarves" },
 ] as const
 
 // Bento layout: one tall tile, one wide tile and two small ones.
 const showcaseTiles = [
-  { image: "/images/product-wall-decor.jpg", key: "space", className: "md:col-span-2 md:row-span-2" },
-  { image: "/images/product-name-sign.jpg", key: "name", className: "md:col-span-2" },
-  { image: "/images/product-photo-stand.jpg", key: "memories", className: "" },
-  { image: "/images/product-topper.jpg", key: "celebrations", className: "" },
+  { image: "/images/showcase-mandala.jpg", key: "space", className: "md:col-span-2 md:row-span-2" },
+  { image: "/images/showcase-lily-detail.jpg", key: "details", className: "md:col-span-2" },
+  { image: "/images/showcase-lace.jpg", key: "memories", className: "" },
+  { image: "/images/showcase-lily.jpg", key: "celebrations", className: "" },
 ] as const
 
 const processSteps = ["define", "prepare", "finish"] as const
-const heroMaterials = ["wood", "resin"] as const
+const heroMaterials = ["wood", "resin", "mdf"] as const
 
 export async function HomePage({ locale }: { locale: Locale }) {
   const t = await getTranslations("home")
@@ -47,7 +48,11 @@ export async function HomePage({ locale }: { locale: Locale }) {
               <span className="h-px w-10 bg-primary" aria-hidden />
               {t("hero.eyebrow")}
             </p>
-            <h1 className="mt-6 max-w-3xl font-serif text-[56px] leading-[0.92] tracking-[-0.02em] sm:text-7xl lg:text-[104px]">{t("hero.title")}</h1>
+            <Link href={shopHref} className="mt-6 inline-flex items-center gap-2 rounded-full bg-honey-soft px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-honey/30">
+              <Sparkles className="h-4 w-4 text-primary" aria-hidden />
+              {t("hero.badge")}
+            </Link>
+            <h1 className="mt-5 max-w-3xl font-serif text-[56px] leading-[0.92] tracking-[-0.02em] sm:text-7xl lg:text-[104px]">{t("hero.title")}</h1>
             <p className="mt-7 max-w-lg text-base leading-7 text-muted-foreground md:text-lg md:leading-8">{t("hero.description")}</p>
             <div className="mt-9 flex flex-wrap gap-3">
               <Link href={shopHref} className="btn-primary">{t("hero.shopCta")} <ArrowRight className="h-4 w-4" /></Link>
@@ -66,7 +71,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
           <Reveal y={24} delay={0.08} className="relative mx-auto w-full max-w-140">
             <div className="absolute -right-2 top-10 bottom-0 left-10 rounded-[2.5rem] bg-primary sm:-right-6 md:-right-10" aria-hidden />
             <div className="arch relative aspect-4/5 overflow-hidden bg-secondary shadow-[0_40px_80px_-40px_rgba(43,29,20,0.6)]">
-              <Image src="/images/hero-lifestyle.jpg" alt={t("hero.imageAlt")} fill priority sizes="(min-width: 1024px) 560px, 90vw" className="object-cover" />
+              <Image src="/images/hero-tray.jpg" alt={t("hero.imageAlt")} fill priority sizes="(min-width: 1024px) 560px, 90vw" className="object-cover" />
             </div>
             <Stamp className="absolute -left-4 bottom-10 h-32 w-32 md:-left-10 md:h-36 md:w-36" />
           </Reveal>
@@ -78,21 +83,43 @@ export async function HomePage({ locale }: { locale: Locale }) {
           <Reveal className="lg:sticky lg:top-32 lg:self-start">
             <span className="ornament block w-28 text-accent" aria-hidden />
             <h2 className="mt-6 font-serif text-5xl leading-[0.98] md:text-6xl">{t("categories.title")}</h2>
+            <p className="mt-6 max-w-md text-base leading-7 text-muted-foreground">{t("categories.description")}</p>
             <Link href={shopHref} className="btn-ink mt-8">{t("products.viewAll")} <ArrowRight className="h-4 w-4" /></Link>
           </Reveal>
           <ol className="grid gap-x-8 sm:grid-cols-2">
-            {categoryTiles.map((tile, index) => (
-              <li key={tile.key}>
-                <Link href={shopHref} className="group flex items-center gap-4 border-b border-border py-4">
-                  <span className="arch relative h-18 w-14 shrink-0 overflow-hidden bg-secondary">
-                    <Image src={tile.image} alt="" fill sizes="56px" className="object-cover transition-transform duration-500 group-hover:scale-110" />
-                  </span>
-                  <span className="w-7 text-xs font-semibold text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
-                  <span className="flex-1 font-serif text-2xl leading-tight transition-colors group-hover:text-primary md:text-[28px]">{t(`categories.tiles.${tile.key}`)}</span>
-                  <ArrowUpRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" strokeWidth={1.6} />
-                </Link>
-              </li>
-            ))}
+            {categoryTiles.map((tile, index) => {
+              const number = <span className="w-7 text-xs font-semibold text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
+              const name = t(`categories.tiles.${tile.key}`)
+              return (
+                <li key={tile.key}>
+                  {"image" in tile ? (
+                    <Link href={shopHref} className="group flex items-center gap-4 border-b border-border py-4">
+                      <span className="arch relative h-18 w-14 shrink-0 overflow-hidden bg-secondary">
+                        <Image src={tile.image} alt="" fill sizes="56px" className="object-cover transition-transform duration-500 group-hover:scale-110" />
+                      </span>
+                      {number}
+                      <span className="flex-1">
+                        <span className="block font-serif text-2xl leading-tight transition-colors group-hover:text-primary md:text-[28px]">{name}</span>
+                        <span className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
+                          {t("categories.available")}
+                        </span>
+                      </span>
+                      <ArrowUpRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" strokeWidth={1.6} />
+                    </Link>
+                  ) : (
+                    <div className="flex items-center gap-4 border-b border-border py-4">
+                      <span className="arch flex h-18 w-14 shrink-0 items-center justify-center border border-dashed border-border bg-secondary/60 text-muted-foreground" aria-hidden>
+                        <Sparkles className="h-4 w-4" strokeWidth={1.6} />
+                      </span>
+                      {number}
+                      <span className="flex-1 font-serif text-2xl leading-tight text-foreground/55 md:text-[28px]">{name}</span>
+                      <span className="shrink-0 rounded-full bg-secondary px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t("categories.comingSoon")}</span>
+                    </div>
+                  )}
+                </li>
+              )
+            })}
           </ol>
         </div>
       </section>
@@ -106,7 +133,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
             </div>
             <Link href={shopHref} className="btn-outline">{t("products.viewAll")} <ArrowRight className="h-4 w-4" /></Link>
           </Reveal>
-          <div className="mt-10 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 md:gap-5 lg:grid-cols-4">
+          <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
             {products.map((product, index) => <Reveal key={product.id} delay={index * 0.05} className="h-full"><ProductCard locale={locale} product={product} priority={index < 2} /></Reveal>)}
           </div>
         </section>

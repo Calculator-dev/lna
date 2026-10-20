@@ -1,0 +1,1 @@
+ALTER TYPE "public"."material" ADD VALUE 'mdf';
