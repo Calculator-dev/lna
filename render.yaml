@@ -29,6 +29,10 @@ services:
         value: "24"
       - key: NODE_ENV
         value: production
+      # Fewer glibc memory arenas: image resizing (sharp/libvips) otherwise leaves the process
+      # holding memory it no longer uses, on an instance with only 512 MB.
+      - key: MALLOC_ARENA_MAX
+        value: "2"
       # The single port the combined server listens on.
       - key: PORT
         value: "10000"

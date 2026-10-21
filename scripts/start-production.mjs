@@ -36,6 +36,30 @@ const storefront = next({ dev: false, dir: `${root}apps/storefront`, hostname: '
 await storefront.prepare()
 const handleStorefront = storefront.getRequestHandler()
 
+// Resizing a photo can take 100+ MB while it runs, and a cold image cache (after every deploy
+// or restart) gets many requests at once, which overflowed the instance's memory. At most this
+// many resizes run together; the rest wait their turn. Cached images are served just as fast.
+const MAX_IMAGE_JOBS = 2
+let imageJobs = 0
+const waitingImageJobs = []
+function limitImageJob(res, run) {
+  const start = () => {
+    imageJobs++
+    let finished = false
+    const finish = () => {
+      if (finished) return
+      finished = true
+      imageJobs--
+      waitingImageJobs.shift()?.()
+    }
+    res.once('close', finish)
+    res.once('finish', finish)
+    run()
+  }
+  if (imageJobs < MAX_IMAGE_JOBS) start()
+  else waitingImageJobs.push(start)
+}
+
 const server = createServer((req, res) => {
   const url = req.url ?? '/'
   if (url === prefix || url.startsWith(`${prefix}/`) || url.startsWith(`${prefix}?`)) {
@@ -44,11 +68,13 @@ const server = createServer((req, res) => {
     api.routing(req, res)
     return
   }
-  handleStorefront(req, res).catch(error => {
+  const serve = () => handleStorefront(req, res).catch(error => {
     console.error('Storefront request failed', error)
     if (!res.headersSent) res.writeHead(500)
     res.end()
   })
+  if (url.startsWith('/_next/image')) limitImageJob(res, serve)
+  else serve()
 })
 
 server.listen(Number(port), '0.0.0.0', () => {

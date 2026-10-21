@@ -39,7 +39,8 @@ export function createApp() {
     reply.header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'")
   })
 
-  app.get("/health", async () => ({ ok: true }))
+  // Render checks this every few seconds; logging each check would bury the real requests.
+  app.get("/health", { logLevel: "silent" }, async () => ({ ok: true }))
   app.register(publicRoutes, { prefix: "/public" })
   app.register(adminRoutes, { prefix: "/admin" })
 
